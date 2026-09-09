@@ -19,19 +19,19 @@ const object = (shape, width, height, x, y) => ({
   src: null, frameWidth: width, frameHeight: height, scale: 1,
   anchor: { x, y }, offset: { x: 0, y: 0 }, placeholder: { kind: 'object', shape },
 });
-const tile = colors => ({
+const tile = (colors, material) => ({
   src: null, frameWidth: CONFIG.tileWidth, frameHeight: CONFIG.tileHeight,
   anchor: { x: CONFIG.tileWidth / 2, y: 0 }, scale: 1,
-  placeholder: { kind: 'terrain', colors },
+  placeholder: { kind: 'terrain', colors, material },
 });
 // Set src to a repository-relative asset path such as assets/creatures/wolf.png.
 // null deliberately uses generated art without issuing missing-file requests.
 export const SPRITES = {
-  player: actor('player', '#517f9b'), npc: actor('human', '#c08757'),
-  rat: actor('rat', '#ad927e'), wolf: actor('wolf', '#9aa9aa'), goblin: actor('goblin', '#9fa65c'),
-  grass: tile(['#526944', '#576e47', '#5c724a', '#506641']),
-  dirt: tile(['#88714f', '#907958']), road: tile(['#a49168']),
-  water: tile(['#34565d']), field: { ...tile(['#75643e', '#847448']), furrows: true },
+  player: actor('player', '#657566'), npc: actor('human', '#c08757'),
+  rat: actor('rat', '#8b8576'), wolf: actor('wolf', '#858c80'), goblin: actor('goblin', '#756e51'),
+  grass: tile(['#697456', '#687355', '#6b7558', '#677153'], 'grass'),
+  dirt: tile(['#8d8165', '#8b7e62'], 'dirt'), road: tile(['#a09679', '#9e9477', '#a2987b', '#9f9578'], 'road'),
+  water: tile(['#4c6260'], 'water'), field: { ...tile(['#746e4e', '#797254'], 'field'), furrows: true },
   tree: object('tree', 72, 120, 36, 106), rock: object('rock', 32, 28, 16, 23),
   bush: object('bush', 32, 28, 16, 23), fence: object('fence', 76, 64, 38, 40),
   sign: object('sign', 40, 52, 20, 45), loot: object('loot', 32, 28, 16, 22),

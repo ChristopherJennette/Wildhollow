@@ -21,6 +21,7 @@ export class Renderer {
     this.world = null; this.staticEntries = []; this.actors = []; this.queue = [];
     this.records = new WeakMap(); this.tiles = {}; this.order = 0;
     for (const [id, definition] of Object.entries(SPRITES)) assets.register(id, definition);
+    for(let index=0;index<3;index++)assets.register(`tree:variant:${index}`,SPRITES.tree,{index});
     for (const [id, definition] of Object.entries(TERRAIN)) {
       const sprite = SPRITES[definition.sprite], count = sprite.placeholder.colors.length;
       this.tiles[id] = Array.from({length:count},(_,index) => assets.register(`${id}:${index}`,sprite,{index}));
@@ -49,7 +50,7 @@ export class Renderer {
     entry = {e,type,depth:0,order:this.order++,x:0,y:0,sprite:null,overlays:[]};
     if (spriteId) {
       const definition = SPRITES[spriteId];
-      entry.sprite = e.color ? this.assets.register(`${spriteId}:${e.color}`,definition,{color:e.color}) : this.assets.sprites.get(spriteId);
+      entry.sprite = spriteId==='tree' ? this.assets.sprites.get(`tree:variant:${e.variant||0}`) : e.color ? this.assets.register(`${spriteId}:${e.color}`,definition,{color:e.color}) : this.assets.sprites.get(spriteId);
       for (const [index,layer] of (definition.layers || []).entries()) {
         if (SPRITES[layer.sprite]) entry.overlays.push(this.assets.register(`${spriteId}:layer:${index}`,{...SPRITES[layer.sprite],...layer}));
       }
@@ -120,7 +121,9 @@ export class Renderer {
       }
     }
     // Keep the player locatable even if a replacement has opaque overhanging pixels.
-    c.strokeStyle='#f5e9b7';c.lineWidth=1.5;c.beginPath();c.ellipse(player.x,player.y-15*z,6*z,12*z,0,0,Math.PI*2);c.stroke();
+    if(this.queue.some(entry=>entry!==player && (entry.layers || entry.type==='object') && this.occludes(entry,player))){
+      c.strokeStyle='#e1dfb7';c.lineWidth=1.5;c.beginPath();c.ellipse(player.x,player.y-24*z,8*z,22*z,0,0,Math.PI*2);c.stroke();
+    }
     this.effects(world);
     const h=hour(world);if(h<6 || h>20){c.fillStyle='#18234244';c.fillRect(0,0,cam.width,cam.height);}
   }

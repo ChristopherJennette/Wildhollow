@@ -68,7 +68,7 @@ export function buildingSprite(building, layer, overrides = {}) {
     src: null, frameWidth: Math.ceil((w+h)*CONFIG.tileWidth/2)+4,
     frameHeight: Math.ceil((w+h)*CONFIG.tileHeight/2)+72,
     anchor: { x: h*CONFIG.tileWidth/2+2, y: 68 }, scale: 1,
-    placeholder: { kind: 'building', w, h, roof: building.roof, layer },
+    placeholder: { kind: 'building', w, h, roof: building.roof, type: building.type, layer },
   };
   return { ...definition, ...overrides, fallback: definition };
 }
