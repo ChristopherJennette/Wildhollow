@@ -1,14 +1,15 @@
+import { generateMap } from './generator.js';
 import { createMap } from './map.js';
 import { ENEMIES, NPCS, SKILLS } from '../data/definitions.js';
 import { CONFIG, distance } from '../config.js';
 import { refreshAttributes, maxima } from '../systems/progression.js';
 
-export function createWorld() {
-  const map = createMap();
+export function createWorld({seed,legacy=false} = {}) {
+  const map = legacy ? createMap() : generateMap(seed);
   const player = { id: 'player', ...map.spawn, radius: 0.25, level: 1, xp: 0, points: 1,
     skills: Object.fromEntries(Object.keys(SKILLS).map(id => [id, { level: 1, xp: 0 }])),
     attributes: {}, inventory: { rustySword: 1, potion: 2 }, weapon: 'rustySword', gold: 8,
-    abilities: [], cooldowns: {}, explored: [], stealthEncounters: [],
+    abilities: [], hotbar: Array(5).fill(null), cooldowns: {}, explored: [], stealthEncounters: [],
     targetId: null, destination: null, path: [], sneaking: false, attackTimer: 0,
     penalty: 0, recoverableHealth: 0, facing: { x: 0, y: 1 } };
   refreshAttributes(player);

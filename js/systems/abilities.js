@@ -9,7 +9,10 @@ import { acquireTarget } from '../world/world.js';
 
 export function unlock(player,id) {
   if(!ABILITIES[id] || player.points<1 || player.abilities.includes(id)) return false;
-  player.points--;player.abilities.push(id);return true;
+  player.points--;player.abilities.push(id);
+  if(!Array.isArray(player.hotbar))player.hotbar=Array(5).fill(null);
+  const free=player.hotbar.indexOf(null);if(free>=0)player.hotbar[free]=id;
+  return true;
 }
 function heal(world,amount,notify) {
   const p=world.player,healed=Math.min(amount,maxima(p).health-p.health);

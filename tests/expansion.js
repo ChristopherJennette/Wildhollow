@@ -11,7 +11,7 @@ export function runExpansionTests() {
   const assert=(ok,message)=>{if(!ok)throw new Error(message);};
   const test=(name,fn)=>{try{fn();results.push(`PASS ${name}`);}catch(e){results.push(`FAIL ${name}: ${e.message}`);}};
   function arena() {
-    const w=createWorld();w.enemies=w.enemies.slice(0,2);
+    const w=createWorld({legacy:true});w.enemies=w.enemies.slice(0,2);
     w.enemies.forEach((e,i)=>{e.x=35;e.y=37+i;e.spawn={x:e.x,y:e.y};});return w;
   }
   test('Offensive skills acquire nearest living enemy and preserve manual selection',()=>{
@@ -50,7 +50,7 @@ export function runExpansionTests() {
     assert(Math.abs(before-slow.enemies[0].y-(39-fast.enemies[0].y))<1e-6,'Slow did not expire');
   });
   test('Herbs heal, brew recipes consume ingredients atomically and grant skill XP',()=>{
-    const w=createWorld(),p=w.player;p.inventory.herb=4;
+    const w=createWorld({legacy:true}),p=w.player;p.inventory.herb=4;
     assert(!useItem(p,'herb',notify)&&p.inventory.herb===4,'Full health consumed herb');p.health-=20;
     assert(useItem(p,'herb',notify)&&p.inventory.herb===3,'Herb not usable');
     assert(craft(w,'potion',notify)&&p.inventory.herb===1&&p.inventory.potion===3,'Brewing quantities incorrect');
@@ -60,7 +60,7 @@ export function runExpansionTests() {
   });
   test('Every recipe is craftable and smith recipes require a nearby blacksmith',()=>{
     for(const [id,recipe] of Object.entries(RECIPES)) {
-      const w=createWorld(),p=w.player,npc=w.npcs.find(n=>n.occupation==='Blacksmith');
+      const w=createWorld({legacy:true}),p=w.player,npc=w.npcs.find(n=>n.occupation==='Blacksmith');
       for(const [item,n] of Object.entries(recipe.ingredients))p.inventory[item]=n;
       if(recipe.station){assert(!craft(w,id,notify),'Forged away from smith');p.x=npc.x;p.y=npc.y;}
       const before=p.inventory[recipe.output]||0;
@@ -69,7 +69,7 @@ export function runExpansionTests() {
     }
   });
   test('New item acquisition, consumables and merchant prices work',()=>{
-    const w=createWorld(),p=w.player;
+    const w=createWorld({legacy:true}),p=w.player;
     for(const kind of ['berry','mushroom','wood','ore']){
       const node=w.map.resources.find(n=>n.kind===kind);p.x=node.x;p.y=node.y;
       assert(gather(w,node,notify)&&p.inventory[kind]>0,`Cannot gather ${kind}`);
@@ -83,7 +83,7 @@ export function runExpansionTests() {
     assert(!trade(w,npc,'sell',p.weapon,notify),'Sold equipped weapon');
   });
   test('Older saves initialize new skills and retain progression and new items',()=>{
-    const w=createWorld();let raw;const storage={setItem(k,v){raw=v;},getItem(){return raw;}};
+    const w=createWorld({legacy:true});let raw;const storage={setItem(k,v){raw=v;},getItem(){return raw;}};
     w.player.level=4;w.player.inventory.manaPotion=2;saveGame(w,storage);
     const old=JSON.parse(raw);for(const id of ['alchemy','cooking','mining','woodcutting'])delete old.player.skills[id];raw=JSON.stringify(old);
     const p=loadGame(storage).world.player;

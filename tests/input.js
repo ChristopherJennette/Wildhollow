@@ -1,3 +1,5 @@
+import { unlock } from '../js/systems/abilities.js';
+import { assignSlot } from '../js/systems/hotbar.js';
 import { installInput } from '../js/input.js';
 import { createWorld } from '../js/world/world.js';
 
@@ -17,7 +19,7 @@ export function runInputTests() {
   const test = (name, fn) => { try { fn(); results.push(`PASS ${name}`); } catch (e) { results.push(`FAIL ${name}: ${e.message}`); } };
   function setup() {
     const canvas = new Surface(), document = new Surface(), window = new Surface();
-    const joystick = new Surface(), knob = new Surface(), world = createWorld();
+    const joystick = new Surface(), knob = new Surface(), world = createWorld({legacy:true});
     document.getElementById = id => id === 'joystick' ? joystick : knob;
     let playing = true, zoom = 1;
     const input = installInput(canvas, { project: (x,y) => ({x:x*10,y:y*10}), scale: n => { zoom *= n; } },
@@ -61,6 +63,15 @@ export function runInputTests() {
     t.canvas.emit('pointerup',touch(1,100,300));t.canvas.emit('pointerup',touch(2,250,300));assert(!p.targetId,'Pinch selected target');
     t.canvas.emit('pointerdown',touch(3,100,500));t.canvas.emit('pointermove',touch(3,148,500));t.input.update();
     t.document.hidden=true;t.document.emit('visibilitychange');assert(t.joystick.hidden&&p.moveInput.x===0,'Background touch stuck');
+  });
+  test('Number keys and numpad trigger assigned slots once and respect pause/focus',()=>{
+    const t=setup(),p=t.world.player,e=t.world.enemies[0];e.x=35;e.y=37;p.x=35;p.y=36;unlock(p,'spark');assignSlot(p,'spark',4);
+    t.document.emit('keydown',{code:'Digit5'});assert(p.cooldowns.spark>0,'Digit 5 did not cast');
+    p.cooldowns.spark=0;const mana=p.mana;
+    t.document.emit('keydown',{code:'Digit5',repeat:true});assert(p.mana===mana,'Repeated key cast');
+    t.document.emit('keydown',{code:'Numpad5',target:{closest:()=>true}});assert(p.mana===mana,'Typed into form and cast');
+    t.document.emit('keydown',{code:'Numpad5'});assert(p.mana<mana,'Numpad 5 did not cast');
+    p.cooldowns.spark=0;t.pause();const paused=p.mana;t.document.emit('keydown',{code:'Digit5'});assert(p.mana===paused,'Cast while paused');
   });
   return results;
 }

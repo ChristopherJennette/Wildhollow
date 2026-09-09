@@ -21,5 +21,8 @@
   background: #9cac84b3;
 }
 
-#hotbar { display: flex; overflow-x: auto; scrollbar-width: thin; scroll-snap-type: x proximity; padding-bottom: 3px; }
-#hotbar button { flex: 0 0 calc((100% - 15px) / 4); scroll-snap-align: start; }
+#hotbar { display: grid; grid-template-columns: repeat(5,minmax(0,1fr)); overflow: visible; }
+#hotbar button { min-width: 0; position: relative; padding: 16px 2px 5px; font-size: 11px; }
+#hotbar b { position: absolute; top: 2px; left: 6px; font-size: 10px; color: #e4cb88; }
+#hotbar span { display: block; overflow-wrap: anywhere; }
+select { font: inherit; min-height: 44px; max-width: 120px; border: 1px solid #70816a; border-radius: 6px; background: #2c3d34; color: inherit; padding: 5px; }

@@ -48,7 +48,7 @@ export function runGraphicsTests(createCanvas = fakeCanvas) {
     a.health=20;updateAnimation(a,1);assert(animationFor(a).state==='idle','Respawn retained death');
   });
   test('Effects keep world positions, expire, and do not move entities or apply damage',()=>{
-    const world=createWorld(),health=world.enemies[0].health;
+    const world=createWorld({legacy:true}),health=world.enemies[0].health;
     emitEffect(world,'projectile',world.player,{to:{x:world.player.x+4,y:world.player.y}});
     emitEffect(world,'hit',world.enemies[0]);updateEffects(world,0.2);
     assert(world.effects.length===1&&world.effects[0].type==='projectile','Effect lifetime wrong');
@@ -62,7 +62,7 @@ export function runGraphicsTests(createCanvas = fakeCanvas) {
     assert(compareDepth(entry(4,4),entry(5,5))<0,'Point objects sorted incorrectly');
   });
   test('Building layers and sprite bounds remain independent of collision footprints',()=>{
-    const world=createWorld(),building=world.map.buildings[0],before=JSON.stringify(world.blocked);
+    const world=createWorld({legacy:true}),building=world.map.buildings[0],before=JSON.stringify(world.blocked);
     const floor=buildingSprite(building,'floor',BUILDINGS.blacksmith.layers.floor);
     const roof=buildingSprite(building,'roof',{frameWidth:800,frameHeight:500,anchor:{x:400,y:490}});
     const assets=new SpriteManager({createCanvas}),record=assets.register('roof',roof);
@@ -84,7 +84,7 @@ export function runGraphicsTests(createCanvas = fakeCanvas) {
     const canvas=createCanvas(780,1688),camera=Object.assign(Object.create(Camera.prototype),{x:35,y:36,width:390,height:844,zoom:1,dpr:2});
     let generated=0;
     const assets=new SpriteManager({createCanvas:(w,h)=>{generated++;return createCanvas(w,h);}});
-    const renderer=new Renderer(canvas,camera,assets),world=createWorld(),before=JSON.stringify(world);
+    const renderer=new Renderer(canvas,camera,assets),world=createWorld({legacy:true}),before=JSON.stringify(world);
     renderer.draw(world);const count=generated;
     renderer.draw(world);assert(generated===count,'Render loop recreated assets');
     assert(renderer.queue.length<renderer.staticEntries.length,'Viewport culling failed');

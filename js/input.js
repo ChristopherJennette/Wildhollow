@@ -1,3 +1,4 @@
+import { useSlot } from './systems/hotbar.js';
 import { distance } from './config.js';
 import { screenDirection } from './camera.js';
 
@@ -24,9 +25,11 @@ export function installInput(canvas, camera, getWorld, isPlaying, notify, platfo
     getWorld().player.moveInput = screenDirection(x || y ? x : stick.x, x || y ? y : stick.y);
   }
   document.addEventListener('keydown', event => {
-    if (!MOVEMENT_KEYS.has(event.code) || !isPlaying() || event.ctrlKey || event.metaKey || event.altKey) return;
+    if (!isPlaying() || event.ctrlKey || event.metaKey || event.altKey) return;
     if (event.target.closest?.('input, textarea, select, [contenteditable="true"]')) return;
-    event.preventDefault(); keys.add(event.code);
+    const slot=/^(?:Digit|Numpad)([1-5])$/.exec(event.code);
+    if(slot){event.preventDefault();if(!event.repeat)useSlot(getWorld(),Number(slot[1])-1,notify);return;}
+    if(MOVEMENT_KEYS.has(event.code)){event.preventDefault();keys.add(event.code);}
   });
   document.addEventListener('keyup', event => { keys.delete(event.code); });
   window.addEventListener('blur', clear);

@@ -1,7 +1,8 @@
+import { HOTBAR_SIZE, assignSlot, useSlot } from './systems/hotbar.js';
 import { SKILLS, ABILITIES, ITEMS, ENEMIES, RECIPES, SHOP } from './data/definitions.js';
 import { FORMULAS } from './config.js';
 import { maxima } from './systems/progression.js';
-import { unlock, useAbility } from './systems/abilities.js';
+import { unlock } from './systems/abilities.js';
 import { useItem, trade, craft, canCraft, restoration } from './systems/inventory.js';
 import { hour, target } from './world/world.js';
 const $=id=>document.getElementById(id);
@@ -15,10 +16,16 @@ export class UI {
     document.querySelectorAll('[data-panel]').forEach(button=>button.onclick=()=>this.openPanel(button.dataset.panel));
     $('sneak').onclick=()=>{const p=getWorld().player;p.sneaking=!p.sneaking;this.notify(p.sneaking?'Sneaking: automatic attacks paused.':'Walking: automatic attacks enabled.');this.update();};
     $('zoom-in').onclick=()=>actions.zoom(1.15);$('zoom-out').onclick=()=>actions.zoom(1/1.15);
-    $('hotbar').innerHTML=Object.entries(ABILITIES).map(([id,def])=>`<button data-ability="${id}" aria-label="${def.name}">${def.name}<small></small></button>`).join('');
-    $('hotbar').onclick=event=>{const b=event.target.closest('[data-ability]');if(!b)return;const p=getWorld().player;if(!p.abilities.includes(b.dataset.ability))this.openPanel('abilities');else useAbility(getWorld(),b.dataset.ability,this.notify);this.update();};
+    $('hotbar').innerHTML=Array.from({length:HOTBAR_SIZE},(_,slot)=>`<button data-slot="${slot}" aria-keyshortcuts="${slot+1}"><b>${slot+1}</b><span>Empty</span><small>Assign</small></button>`).join('');
+    $('hotbar').onclick=event=>{const button=event.target.closest('[data-slot]');if(!button)return;const slot=Number(button.dataset.slot);if(!getWorld().player.hotbar[slot])this.openPanel('abilities');else useSlot(getWorld(),slot,this.notify);this.update();};
+    $('panel-body').onchange=event=>{
+      const select=event.target.closest('[data-slot-ability]');if(!select)return;
+      assignSlot(getWorld().player,select.dataset.slotAbility,Number(select.value));
+      this.renderPanel();this.update();actions.save();
+    };
     $('panel-body').onclick=event=>{
       const button=event.target.closest('button');if(!button)return;
+      if(button.dataset.hotbarMenu!==undefined){this.openPanel('abilities');return;}
       const world=getWorld(),p=world.player;
       if(button.dataset.unlock && unlock(p,button.dataset.unlock))this.notify(`${ABILITIES[button.dataset.unlock].name} unlocked.`);
       if(button.dataset.item)useItem(p,button.dataset.item,this.notify);
@@ -29,7 +36,7 @@ export class UI {
     document.addEventListener('keydown',event=>{
       if(event.key==='Escape') {if(this.panel)this.closePanel();else if(!$('menu').hidden&&getWorld())actions.continueGame();else if(getWorld())actions.menu();}
       if(event.key==='Tab' && this.panel) {
-        const focusable=[...$('panel').querySelectorAll('button:not(:disabled)')],first=focusable[0],last=focusable.at(-1);
+        const focusable=[...$('panel').querySelectorAll('button:not(:disabled),select:not(:disabled)')],first=focusable[0],last=focusable.at(-1);
         if(event.shiftKey && document.activeElement===first){event.preventDefault();last.focus();}
         else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}
       }
@@ -48,16 +55,18 @@ export class UI {
     if(this.panel==='character') {
       body=`<p class="description">Level ${p.level} · ${Math.floor(p.xp)} / ${FORMULAS.characterXP(p.level)} XP<br><span class="tag">${p.points} ability points · ${p.gold} gold</span></p>`;
       for(const [name,value] of Object.entries(p.attributes))body+=row(name,'Grows through associated skill levels.',`<strong>${value.toFixed(2)}</strong>`);
+      body+=`<p class="muted">World: ${world.map.seed===undefined?'Original village':`Seed ${world.map.seed}`}.</p>`;
       body+=`<p class="muted">${p.penalty>0?`Weary: ${Math.ceil(p.penalty)}s of slower recovery.`:'Well rested.'} Attributes start at 8 and grow automatically.</p>`;
     }
+    if(this.panel==='skills')body+='<button data-hotbar-menu>Assign active skills to hotbar</button>';
     if(this.panel==='skills') for(const [id,def] of Object.entries(SKILLS)) {
       const s=p.skills[id],max=FORMULAS.skillXP(s.level);
       body+=row(`${def.name} <span class="tag">${s.level} / 100</span>`,`${def.use}<br>${Object.keys(def.attributes).join(' / ')}<progress aria-label="${def.name} experience" value="${s.xp}" max="${max}"></progress>${Math.floor(s.xp)} / ${max} XP`);
     }
     if(this.panel==='abilities') {
-      body=`<p class="tag">${p.points} ability points available</p>`;
-      for(const [id,def] of Object.entries(ABILITIES))body+=row(def.name,`${def.description}<br>${def.cost} ${def.resource} · ${def.cooldown}s cooldown`,p.abilities.includes(id)?'<span class="tag">Unlocked</span>':`<button data-unlock="${id}" ${p.points<1?'disabled':''}>Unlock · 1</button>`);
-      body+='<p class="muted">Swipe the ability bar for more skills. Offensive abilities select the nearest enemy when no target is selected. Abilities scale with your skills and attributes. Earn points by leveling through combat, exploration, trade, or crafting.</p>';
+      body=`<p class="tag">${p.points} ability points available</p><p class="muted">Assign learned skills to slots 1–5. Press the matching number or click/tap the slot.</p>`;
+      for(const [id,def] of Object.entries(ABILITIES))body+=row(def.name,`${def.description}<br>${def.cost} ${def.resource} · ${def.cooldown}s cooldown`,p.abilities.includes(id)?this.slotSelector(p,id):`<button data-unlock="${id}" ${p.points<1?'disabled':''}>Unlock · 1</button>`);
+      body+='<p class="muted">Offensive abilities select the nearest enemy when no target is selected. Abilities scale with your skills and attributes. Earn points by leveling through combat, exploration, trade, or crafting.</p>';
     }
     if(this.panel==='inventory') {
       body=`<p class="tag">${p.gold} gold · No carrying limit</p>`;
@@ -87,6 +96,10 @@ export class UI {
     }
     $('panel-body').innerHTML=body;
   }
+  slotSelector(player,id) {
+    const slot=player.hotbar.indexOf(id);
+    return `<select data-slot-ability="${id}" aria-label="Hotbar slot for ${ABILITIES[id].name}"><option value="-1" ${slot<0?'selected':''}>Unassigned</option>${Array.from({length:HOTBAR_SIZE},(_,i)=>`<option value="${i}" ${slot===i?'selected':''}>Slot ${i+1}</option>`).join('')}</select>`;
+  }
   recipeRow(id,recipe,player,atSmith=false) {
     const ingredients=Object.entries(recipe.ingredients).map(([item,n])=>`${ITEMS[item].name}: ${player.inventory[item]||0}/${n}`).join(' · ');
     return row(recipe.name,`${ingredients}<br>Trains ${SKILLS[recipe.skill].name}.`, `<button ${atSmith?`data-trade="craft" data-id="${id}"`:`data-craft="${id}"`} ${canCraft(player,recipe)?'':'disabled'}>Make</button>`);
@@ -98,11 +111,15 @@ export class UI {
     const h=hour(world);$('clock').textContent=`${String(Math.floor(h)).padStart(2,'0')}:${String(Math.floor(h%1*60)).padStart(2,'0')}`;
     const enemy=target(world);$('target').textContent=enemy?`${ENEMIES[enemy.kind].name} · ${Math.ceil(enemy.health)} HP${p.sneaking?' · Sneaking':''}`:'WASD / arrows / touch-drag · click to target';
     $('sneak').setAttribute('aria-pressed',String(p.sneaking));
-    $('location').textContent=p.penalty>0?`Weary ${Math.ceil(p.penalty)}s`:p.x>21&&p.x<53&&p.y>25&&p.y<51?'Wildhollow village':'The wilds';
+    const bounds=world.map.settlement.bounds||{left:21,right:53,top:25,bottom:51};
+    $('location').textContent=p.penalty>0?`Weary ${Math.ceil(p.penalty)}s`:p.x>bounds.left&&p.x<bounds.right&&p.y>bounds.top&&p.y<bounds.bottom?'Wildhollow village':'The wilds';
     for(const button of $('hotbar').children) {
-      const id=button.dataset.ability,def=ABILITIES[id],cooldown=p.cooldowns[id]||0;
-      button.querySelector('small').textContent=!p.abilities.includes(id)?'Unlock':cooldown>0?`${cooldown.toFixed(1)}s`:`${def.cost} ${def.resource==='mana'?'MP':'ST'}`;
-      button.disabled=p.abilities.includes(id)&&(cooldown>0||p[def.resource]<def.cost);
+      const slot=Number(button.dataset.slot),id=p.hotbar[slot],def=ABILITIES[id],cooldown=p.cooldowns[id]||0;
+      button.querySelector('span').textContent=def?.name||'Empty';
+      button.querySelector('small').textContent=!def?'Assign':cooldown>0?`${cooldown.toFixed(1)}s`:`${def.cost} ${def.resource==='mana'?'MP':'ST'}`;
+      button.setAttribute('aria-label',`Slot ${slot+1}: ${def?.name||'Assign ability'}`);
+      button.disabled=!!def&&(cooldown>0||p[def.resource]<def.cost);
+
     }
   }
 }

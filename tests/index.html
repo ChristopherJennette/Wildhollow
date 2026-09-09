@@ -3,7 +3,8 @@ import { runTests } from './simulation.js';
 const { runInputTests } = await import('./input.js');
 const { runGraphicsTests } = await import('./graphics.js');
 const { runExpansionTests } = await import('./expansion.js');
-const result = [...runTests(), ...runInputTests(), ...runGraphicsTests(), ...runExpansionTests()];
+const { runWorldTests } = await import('./worldGeneration.js');
+const result = [...runTests(), ...runInputTests(), ...runGraphicsTests(), ...runExpansionTests(), ...runWorldTests()];
 document.getElementById('results').textContent = result.join('\n');
 document.title = result.some(line => line.startsWith('FAIL')) ? 'FAIL' : 'PASS';
 </script></body></html>
