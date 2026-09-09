@@ -1,4 +1,4 @@
-import { CONFIG, distance } from '../config.js';
+import { distance } from '../config.js';
 
 export function walkable(world, x, y, radius = 0.25) {
   for (const dx of [-radius, radius]) for (const dy of [-radius, radius]) {
@@ -58,15 +58,6 @@ export function move(world, entity, speed, dt) {
     if(step===d) entity.path.shift();
   }
   if(!entity.path?.length) entity.destination=null;
-}
-
-// Invert the isometric projection so input directions match the screen.
-export function screenDirection(x, y) {
-  const strength = Math.min(1, Math.hypot(x, y));
-  const ratio = CONFIG.tileWidth / CONFIG.tileHeight;
-  const worldX = x + y * ratio, worldY = y * ratio - x;
-  const length = Math.hypot(worldX, worldY);
-  return length ? { x: worldX / length * strength, y: worldY / length * strength } : { x: 0, y: 0 };
 }
 
 export function moveDirect(world, entity, input, speed, dt) {

@@ -22,7 +22,7 @@ export function createWorld() {
   };
   // Static occupancy is shared by pathfinding, line of sight, and collision checks.
   world.blocked = Array.from({ length: map.height }, (_, y) => map.terrain[y].map(t => t === 'water'));
-  for (const b of map.buildings) for (let y=b.y; y<b.y+b.h; y++) for(let x=b.x;x<b.x+b.w;x++) world.blocked[y][x]=true;
+  for (const b of map.buildings) for (let y=b.y; y<b.y+b.collisionFootprint.h; y++) for(let x=b.x;x<b.x+b.collisionFootprint.w;x++) world.blocked[y][x]=true;
   for (const t of map.trees) world.blocked[Math.floor(t.y)][Math.floor(t.x)] = true;
   return world;
 }

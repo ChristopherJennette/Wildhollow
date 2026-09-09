@@ -1,3 +1,5 @@
+import { cueAnimation } from '../graphics/animation.js';
+import { emitEffect } from '../graphics/effects.js';
 import { CONFIG, FORMULAS, distance } from '../config.js';
 import { ENEMIES, ITEMS } from '../data/definitions.js';
 import { characterXP, skillXP, maxima } from './progression.js';
@@ -9,7 +11,9 @@ export function damageEnemy(world, enemy, amount, skill, notify) {
   const actual=Math.min(enemy.health,amount);
   enemy.health-=actual; enemy.aggro=true;
   skillXP(world.player,skill,Math.max(1,actual*0.4));
-  world.effects.push({x:enemy.x,y:enemy.y,text:`−${Math.round(actual)}`,color:'#ffd18b',life:0.8});
+  cueAnimation(enemy,enemy.health<=0?'death':'hurt',0.18);
+  emitEffect(world,'text',enemy,{text:`−${Math.round(actual)}`,color:'#ffd18b'});
+  emitEffect(world,'hit',enemy);
   if(enemy.health<=0) {
     const def=ENEMIES[enemy.kind];
     characterXP(world.player,def.xp,notify);
@@ -45,6 +49,7 @@ export function updateCombat(world, dt, notify) {
   }
   if(foe && !p.sneaking && p.attackTimer<=0) {
     if(!target(world)) p.targetId=foe.id;
+    cueAnimation(p,'attack');
     damageEnemy(world,foe,FORMULAS.melee(p.attributes,p.skills,ITEMS[p.weapon].damage),'oneHanded',notify);
     p.attackTimer=CONFIG.attackInterval;
   }
@@ -86,7 +91,9 @@ export function updateCombat(world, dt, notify) {
         const credit=Math.min(4,Math.max(0,20-enemy.armorXP));
         skillXP(p,'lightArmor',credit);enemy.armorXP+=credit;
         enemy.attackTimer=def.interval;
-        world.effects.push({x:p.x,y:p.y,text:`−${Math.round(damage)}`,color:'#ff998a',life:0.7});
+        cueAnimation(enemy,'attack');cueAnimation(p,'hurt',0.18);
+        emitEffect(world,'text',p,{text:`−${Math.round(damage)}`,color:'#ff998a',lifetime:0.7});
+        emitEffect(world,'hit',p);
         if(p.health<=0) {respawnPlayer(world,notify);return;}
       }
     } else {

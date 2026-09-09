@@ -1,3 +1,5 @@
+import { updateAnimations } from './graphics/animation.js';
+import { updateEffects } from './graphics/effects.js';
 import { CONFIG, distance } from './config.js';
 import { createWorld } from './world/world.js';
 import { Camera } from './camera.js';
@@ -54,8 +56,8 @@ function frame(timestamp) {
       npcTimer+=CONFIG.tick;
       if(npcTimer>=CONFIG.npcInterval){updateNPCs(world,npcTimer);npcTimer=0;}
       interact();
-      for(const e of world.effects)e.life-=CONFIG.tick;
-      world.effects=world.effects.filter(e=>e.life>0);
+      updateAnimations(world,CONFIG.tick);
+      updateEffects(world,CONFIG.tick);
       accumulator-=CONFIG.tick;
       if(ui.panel) {accumulator=0;break;}
     }

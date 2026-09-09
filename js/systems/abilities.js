@@ -1,3 +1,5 @@
+import { cueAnimation } from '../graphics/animation.js';
+import { emitEffect } from '../graphics/effects.js';
 import { ABILITIES, ITEMS } from '../data/definitions.js';
 import { FORMULAS, distance } from '../config.js';
 import { maxima, skillXP, characterXP } from './progression.js';
@@ -22,7 +24,8 @@ export function useAbility(world,id,notify) {
     const credit=Math.min(healed,p.recoverableHealth);
     p.health+=healed;p.recoverableHealth=Math.max(0,p.recoverableHealth-healed);
     skillXP(p,'restoration',credit*0.6);characterXP(p,credit*0.12,notify);
-    world.effects.push({x:p.x,y:p.y,text:`+${Math.round(healed)}`,color:'#b8ef9e',life:1});
+    emitEffect(world,'text',p,{text:`+${Math.round(healed)}`,color:'#b8ef9e',lifetime:1});
+    emitEffect(world,'heal',p);
   } else {
     if(!enemy) {notify('Select an enemy first.');return false;}
     if(distance(p,enemy)>def.range || !clearLine(world,p,enemy)) {notify('Move closer with a clear line to your target.');return false;}
@@ -34,9 +37,11 @@ export function useAbility(world,id,notify) {
     const power=FORMULAS[id](p.attributes,p.skills,ITEMS[p.weapon].damage);
     const victims=world.enemies.filter(e=>e.health>0 && (e===enemy || (id==='cleave' && distance(p,e)<=2 && clearLine(world,p,e)) || (id==='fireball' && distance(enemy,e)<1.8 && clearLine(world,enemy,e))));
     for(const victim of victims) damageEnemy(world,victim,power*(id==='fireball' && victim!==enemy?0.5:1),def.skill,notify);
-    world.effects.push({x:enemy.x,y:enemy.y,ring:id==='fireball'?'#ffb15c':'#e8d594',life:0.5});
+    if(id==='fireball') emitEffect(world,'projectile',p,{to:{x:enemy.x,y:enemy.y}});
+    emitEffect(world,'ring',enemy,{color:id==='fireball'?'#ffb15c':'#e8d594'});
     if(id==='backstab') p.sneaking=false;
   }
+  cueAnimation(p,def.resource==='mana'?'cast':'attack',def.resource==='mana'?0.5:0.35);
   p[def.resource]-=def.cost;p.cooldowns[id]=def.cooldown;
   return true;
 }

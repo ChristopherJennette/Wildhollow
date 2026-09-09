@@ -21,6 +21,6 @@ Move with **WASD / arrow keys** or **drag on the world for a floating touch joys
 
 ## Code
 
-`js/data/` holds definitions; `js/config.js` holds balance formulas. `js/world/` provides Cartesian world data. `js/systems/` handles simulation and saves. Rendering, camera, input and UI are independent modules. Replace the map provider to introduce procedural worlds later.
+`js/data/` holds definitions; `js/config.js` holds balance formulas. `js/world/` provides Cartesian world data. `js/systems/` handles simulation and saves. Rendering, camera, input and UI are independent modules. `js/graphics/` handles cached sprites, shared animation and cosmetic effects; `js/data/graphics.js` defines visuals. See [asset replacement](assets/README.md). Replace the map provider to introduce procedural worlds later.
 
 Run browser checks by serving the repository and opening `tests/index.html`. No test dependencies. Placeholder art; no interiors, full economy, passive perks or settlement growth yet.

@@ -1,7 +1,8 @@
+import { screenDirection } from '../js/camera.js';
 import { createWorld } from '../js/world/world.js';
 import { CONFIG, FORMULAS, distance } from '../js/config.js';
 import { NPCS } from '../js/data/definitions.js';
-import { findPath, setDestination, move, moveDirect, screenDirection, walkable } from '../js/systems/movement.js';
+import { findPath, setDestination, move, moveDirect, walkable } from '../js/systems/movement.js';
 import { skillXP, characterXP, maxima } from '../js/systems/progression.js';
 import { updateCombat, damageEnemy, respawnPlayer } from '../js/systems/combat.js';
 import { unlock, useAbility } from '../js/systems/abilities.js';

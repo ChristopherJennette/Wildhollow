@@ -1,7 +1,8 @@
 <!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Wildhollow checks</title><body><h1>Wildhollow checks</h1><pre id="results">Running…</pre><script type="module">
 import { runTests } from './simulation.js';
 const { runInputTests } = await import('./input.js');
-const result = [...runTests(), ...runInputTests()];
+const { runGraphicsTests } = await import('./graphics.js');
+const result = [...runTests(), ...runInputTests(), ...runGraphicsTests()];
 document.getElementById('results').textContent = result.join('\n');
 document.title = result.some(line => line.startsWith('FAIL')) ? 'FAIL' : 'PASS';
 </script></body></html>

@@ -1,6 +1,6 @@
 export const CONFIG = {
   version: '0.1.0', saveVersion: 1, saveKey: 'wildhollow.save',
-  tileWidth: 64, tileHeight: 32, tick: 1 / 30,
+  tileWidth: 64, tileHeight: 32, minZoom: 0.55, maxZoom: 1.7, maxDpr: 2, tick: 1 / 30,
   daySeconds: 480, startHour: 8, npcInterval: 0.25, autosaveSeconds: 15,
   playerSpeed: 3, meleeRange: 1.25, attackInterval: 0.85,
   activeRadius: 23, respawnSeconds: 75, deathPenaltySeconds: 45,

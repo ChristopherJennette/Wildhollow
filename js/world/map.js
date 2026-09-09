@@ -1,3 +1,4 @@
+import { WORLD_OBJECTS } from '../data/graphics.js';
 // Map providers return this same Cartesian structure; a seeded provider can replace this one.
 export function createMap() {
   const width = 80, height = 72;
@@ -9,7 +10,8 @@ export function createMap() {
     { id: 'house-east', name: 'Mara & Wren’s home', x: 45, y: 32, w: 3, h: 3, roof: '#737b60' },
     { id: 'house-south', name: 'Oswin’s home', x: 39, y: 43, w: 3, h: 3, roof: '#817568' },
     { id: 'farm', name: 'Hollow farm', x: 44, y: 40, w: 4, h: 3, roof: '#9b7d50' },
-  ].map(b => ({ ...b, settlementId: 'wildhollow', door: { x: b.x + b.w / 2, y: b.y + b.h + 0.9 } }));
+  ].map(b => ({ ...b, type: ({smithy:'blacksmith',store:'store',inn:'inn',farm:'farm'})[b.id] || 'house',
+    footprint: {w:b.w,h:b.h}, collisionFootprint: {w:b.w,h:b.h}, settlementId: 'wildhollow', door: { x: b.x + b.w / 2, y: b.y + b.h + 0.9 } }));
   const terrain = Array.from({ length: height }, (_, y) => Array.from({ length: width }, (_, x) => {
     if (x < 2 || y < 2 || x >= width - 2 || y >= height - 2) return 'water';
     if (Math.abs(x - 35) < 2 || (y >= 34 && y <= 36 && x > 21 && x < 51)) return 'road';
@@ -21,7 +23,7 @@ export function createMap() {
     const hash = (x * 73856093 ^ y * 19349663) >>> 0;
     if (x > 20 && x < 53 && y > 25 && y < 51) continue;
     if (terrain[y][x] !== 'grass' || Math.abs(x - 35) < 4 || hash % 10 > 5) continue;
-    trees.push({ id: `tree-${x}-${y}`, x: x + (hash % 5) / 10, y: y + (hash % 7) / 10, radius: 0.45, variant: hash % 3 });
+    trees.push({ id: `tree-${x}-${y}`, x: x + (hash % 5) / 10, y: y + (hash % 7) / 10, type: 'tree', radius: WORLD_OBJECTS.tree.collision.radius, variant: hash % 3 });
   }
   const resources = [
     ...[[26,39],[25,29],[43,37],[49,38],[50,50],[21,43],[31,23],[40,24],[20,32],[53,34]].map(([x,y],i) => ({ id: `herb-${i}`, kind: 'herb', x, y, readyAt: 0 })),
