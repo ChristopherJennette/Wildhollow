@@ -1,7 +1,7 @@
 import { CONFIG, FORMULAS, distance } from '../config.js';
 import { ENEMIES, ITEMS } from '../data/definitions.js';
 import { characterXP, skillXP, maxima } from './progression.js';
-import { move, setDestination, clearLine } from './movement.js';
+import { move, moveDirect, setDestination, clearLine } from './movement.js';
 import { target } from '../world/world.js';
 
 export function damageEnemy(world, enemy, amount, skill, notify) {
@@ -23,7 +23,7 @@ export function respawnPlayer(world,notify) {
   const p=world.player;
   Object.assign(p,world.map.spawn,maxima(p));
   p.penalty=CONFIG.deathPenaltySeconds;p.recoverableHealth=0;p.targetId=null;p.path=[];p.destination=null;p.sneaking=false;
-  world.interaction=null;
+  world.interaction=null;p.moveInput={x:0,y:0};
   for(const enemy of world.enemies) {
     enemy.aggro=false;enemy.path=[];enemy.destination=null;
     if(enemy.health>0) {Object.assign(enemy,enemy.spawn);enemy.health=ENEMIES[enemy.kind].health;}
@@ -35,21 +35,19 @@ export function updateCombat(world, dt, notify) {
   p.attackTimer=Math.max(0,p.attackTimer-dt);
   p.penalty=Math.max(0,p.penalty-dt);
   for(const id of Object.keys(p.cooldowns)) p.cooldowns[id]=Math.max(0,p.cooldowns[id]-dt);
+  p.path=[];p.destination=null;
+  const moving=moveDirect(world,p,p.moveInput||{x:0,y:0},CONFIG.playerSpeed*(p.sneaking?0.5:1),dt);
+  const inReach=enemy=>enemy && enemy.health>0 && distance(p,enemy)<=CONFIG.meleeRange && clearLine(world,p,enemy);
   let foe=target(world);
-  if(foe) {
-    const d=distance(p,foe);
-    if(d>CONFIG.meleeRange || !clearLine(world,p,foe)) {
-      p.chaseTimer=(p.chaseTimer||0)-dt;
-      if(p.chaseTimer<=0) {setDestination(world,p,foe);p.chaseTimer=0.5;}
-    } else {
-      p.path=[];p.destination=null;
-      if(!p.sneaking && p.attackTimer<=0) {
-        damageEnemy(world,foe,FORMULAS.melee(p.attributes,p.skills,ITEMS[p.weapon].damage),'oneHanded',notify);
-        p.attackTimer=CONFIG.attackInterval;
-      }
-    }
+  if(!inReach(foe)) {
+    foe=null;
+    for(const enemy of world.enemies) if(inReach(enemy) && (!foe || distance(p,enemy)<distance(p,foe))) foe=enemy;
   }
-  move(world,p,CONFIG.playerSpeed*(p.sneaking?0.5:1),dt);
+  if(foe && !p.sneaking && p.attackTimer<=0) {
+    if(!target(world)) p.targetId=foe.id;
+    damageEnemy(world,foe,FORMULAS.melee(p.attributes,p.skills,ITEMS[p.weapon].damage),'oneHanded',notify);
+    p.attackTimer=CONFIG.attackInterval;
+  }
   let threatened=false;
   for(const enemy of world.enemies) {
     const def=ENEMIES[enemy.kind];
@@ -69,7 +67,7 @@ export function updateCombat(world, dt, notify) {
     const detects=p.sneaking ? d<0.65 || (d<def.aggro*0.65 && inFront) : d<def.aggro;
     if(detects && visible) enemy.aggro=true;
     const encounter=`${enemy.id}:${enemy.generation}`;
-    if(p.sneaking && p.path.length && !enemy.aggro && d<4 && visible && !p.stealthEncounters.includes(encounter)) {
+    if(p.sneaking && moving && !enemy.aggro && d<4 && visible && !p.stealthEncounters.includes(encounter)) {
       p.stealthEncounters.push(encounter);skillXP(p,'stealth',12);
       if(p.stealthEncounters.length>200) p.stealthEncounters.shift();
     }

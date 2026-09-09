@@ -83,7 +83,7 @@ export class UI {
     $('resources').innerHTML=[['health','HP','#c78370'],['stamina','ST','#b7bf79'],['mana','MP','#80b4d2']].map(([id,label,color])=>`<div class="resource"><span>${label}</span><div class="track"><div class="fill" style="--color:${color};width:${Math.max(0,p[id]/max[id]*100)}%"></div></div><span>${Math.ceil(p[id])} / ${Math.round(max[id])}</span></div>`).join('');
     $('level').textContent=`Lv ${p.level} · ${p.points} AP`;$('xp').value=p.xp;$('xp').max=FORMULAS.characterXP(p.level);
     const h=hour(world);$('clock').textContent=`${String(Math.floor(h)).padStart(2,'0')}:${String(Math.floor(h%1*60)).padStart(2,'0')}`;
-    const enemy=target(world);$('target').textContent=enemy?`${ENEMIES[enemy.kind].name} · ${Math.ceil(enemy.health)} HP${p.sneaking?' · Sneaking':''}`:'Tap ground to move · enemies to fight';
+    const enemy=target(world);$('target').textContent=enemy?`${ENEMIES[enemy.kind].name} · ${Math.ceil(enemy.health)} HP${p.sneaking?' · Sneaking':''}`:'WASD / arrows / touch-drag · click to target';
     $('sneak').setAttribute('aria-pressed',String(p.sneaking));
     $('location').textContent=p.penalty>0?`Weary ${Math.ceil(p.penalty)}s`:p.x>21&&p.x<53&&p.y>25&&p.y<51?'Wildhollow village':'The wilds';
     for(const button of $('hotbar').children) {

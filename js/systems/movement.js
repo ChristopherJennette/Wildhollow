@@ -1,4 +1,4 @@
-import { distance } from '../config.js';
+import { CONFIG, distance } from '../config.js';
 
 export function walkable(world, x, y, radius = 0.25) {
   for (const dx of [-radius, radius]) for (const dy of [-radius, radius]) {
@@ -58,4 +58,30 @@ export function move(world, entity, speed, dt) {
     if(step===d) entity.path.shift();
   }
   if(!entity.path?.length) entity.destination=null;
+}
+
+// Invert the isometric projection so input directions match the screen.
+export function screenDirection(x, y) {
+  const strength = Math.min(1, Math.hypot(x, y));
+  const ratio = CONFIG.tileWidth / CONFIG.tileHeight;
+  const worldX = x + y * ratio, worldY = y * ratio - x;
+  const length = Math.hypot(worldX, worldY);
+  return length ? { x: worldX / length * strength, y: worldY / length * strength } : { x: 0, y: 0 };
+}
+
+export function moveDirect(world, entity, input, speed, dt) {
+  const magnitude = Math.hypot(input.x, input.y);
+  if (!magnitude) return false;
+  const dx = input.x / Math.max(1, magnitude) * speed * dt;
+  const dy = input.y / Math.max(1, magnitude) * speed * dt;
+  const steps = Math.max(1, Math.ceil(Math.hypot(dx, dy) / 0.1));
+  const startX = entity.x, startY = entity.y;
+  for (let i = 0; i < steps; i++) {
+    // Slide along walls; substeps prevent crossing narrow obstacles on a slow frame.
+    if (walkable(world, entity.x + dx / steps, entity.y, entity.radius)) entity.x += dx / steps;
+    if (walkable(world, entity.x, entity.y + dy / steps, entity.radius)) entity.y += dy / steps;
+  }
+  const moved = Math.hypot(entity.x - startX, entity.y - startY);
+  if (moved) entity.facing = { x: (entity.x - startX) / moved, y: (entity.y - startY) / moved };
+  return moved > 0.001;
 }

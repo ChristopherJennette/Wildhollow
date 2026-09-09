@@ -1,7 +1,7 @@
 import { createWorld } from '../js/world/world.js';
 import { CONFIG, FORMULAS, distance } from '../js/config.js';
 import { NPCS } from '../js/data/definitions.js';
-import { findPath, setDestination, move, walkable } from '../js/systems/movement.js';
+import { findPath, setDestination, move, moveDirect, screenDirection, walkable } from '../js/systems/movement.js';
 import { skillXP, characterXP, maxima } from '../js/systems/progression.js';
 import { updateCombat, damageEnemy, respawnPlayer } from '../js/systems/combat.js';
 import { unlock, useAbility } from '../js/systems/abilities.js';
@@ -26,10 +26,38 @@ export function runTests() {
     const p=createWorld().player;skillXP(p,'oneHanded',FORMULAS.skillXP(1));assert(p.skills.oneHanded.level===2,'Skill did not level');assert(p.attributes.Strength>8,'Attribute did not grow');assert(p.level===1,'Skill XP changed character level');
     characterXP(p,FORMULAS.characterXP(1));assert(p.level===2&&p.points===2,'No level point');skillXP(p,'oneHanded',1e9);assert(p.skills.oneHanded.level===100,'Skill cap failed');
   });
-  test('Selected enemy is approached and killed automatically',()=>{
-    const w=createWorld(),e=w.enemies[0];w.player.x=e.x+3;w.player.y=e.y;w.player.targetId=e.id;
-    for(let i=0;i<450&&e.health>0;i++){w.elapsed+=1/30;updateCombat(w,1/30,notify);}
-    assert(e.health<=0,'Enemy survived');assert(w.player.xp>0,'No combat XP');assert(w.player.skills.oneHanded.xp>0||w.player.skills.oneHanded.level>1,'No skill XP');assert(w.drops.length===1,'Missing loot');
+  test('Direct input follows screen directions without diagonal speed boosts',()=>{
+    const up=screenDirection(0,-1),right=screenDirection(1,0);
+    assert(up.x<0&&up.y<0&&right.x>0&&right.y<0,'Incorrect isometric mapping');
+    assert(Math.abs(Math.hypot(...Object.values(screenDirection(1,1)))-1)<1e-9,'Diagonal speed boost');
+    assert(Math.abs(Math.hypot(...Object.values(screenDirection(0.5,0)))-0.5)<1e-9,'Lost analog strength');
+    const w=createWorld(),p=w.player,start={x:p.x,y:p.y};
+    moveDirect(w,p,right,3,0.1);assert(Math.abs(distance(p,start)-0.3)<1e-9,'Wrong move speed');
+    const stopped={x:p.x,y:p.y};moveDirect(w,p,{x:0,y:0},3,1);assert(distance(p,stopped)===0,'Did not stop');
+    p.x=28.5;p.y=30;moveDirect(w,p,{x:1,y:0},3,2);
+    assert(p.x<29&&walkable(w,p.x,p.y),'Passed through building');
+  });
+  test('Melee finds nearby hostiles without chasing distant selected enemies',()=>{
+    const w=createWorld(),p=w.player,e=w.enemies[0];w.enemies=[e];e.x=35;e.y=37;e.spawn={x:35,y:37};
+    updateCombat(w,1/30,notify);assert(e.health<34,'No automatic melee');
+    for(let i=0;i<100&&e.health>0;i++)updateCombat(w,1/30,notify);
+    assert(e.health<=0&&p.xp>0&&w.drops.length===1,'Combat progression failed');
+    e.health=34;e.x=35;e.y=26;e.aggro=false;p.targetId=e.id;p.attackTimer=0;
+    const start={x:p.x,y:p.y};updateCombat(w,1/30,notify);
+    assert(distance(p,start)===0&&e.health===34,'Target selection caused chase or remote damage');
+  });
+  test('Melee honors selection, range, obstruction and stealth without stopping movement',()=>{
+    const w=createWorld(),p=w.player,[a,b]=w.enemies;w.enemies=[a,b];
+    a.x=35;a.y=36.6;b.x=35;b.y=37;a.spawn={x:a.x,y:a.y};b.spawn={x:b.x,y:b.y};p.targetId=b.id;
+    updateCombat(w,1/30,notify);assert(b.health<34&&a.health===34,'Selected target not prioritized');
+    b.x=35;b.y=26;p.attackTimer=0;updateCombat(w,1/30,notify);
+    assert(a.health<34&&p.targetId===b.id,'Distant selection blocked melee or lost selection');
+    p.sneaking=true;p.attackTimer=0;const health=a.health;updateCombat(w,1/30,notify);
+    assert(a.health===health,'Sneaking triggered melee');
+    p.sneaking=false;p.moveInput=screenDirection(1,0);const start={x:p.x,y:p.y};updateCombat(w,1/30,notify);
+    assert(distance(p,start)>0,'Combat stopped manual movement');
+    p.x=35.8;p.y=35.5;a.x=36.8;a.y=35.5;w.enemies=[a];a.health=34;p.attackTimer=0;p.moveInput={x:0,y:0};w.blocked[35][36]=true;
+    updateCombat(w,1/30,notify);assert(a.health===34,'Melee passed through an obstacle');
   });
   test('Ability unlock, fireball damage, cost, cooldown, healing',()=>{
     const w=createWorld(),p=w.player,e=w.enemies[0];p.x=e.x+2;p.y=e.y;w.enemies=w.enemies.slice(0,1);p.targetId=e.id;

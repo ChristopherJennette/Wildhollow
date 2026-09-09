@@ -8,7 +8,7 @@ Serve the repository with a static HTTP server, for example `python3 -m http.ser
 
 For GitHub Pages, publish **main / (root)** in repository Settings → Pages. All paths are relative.
 
-Tap/click ground to move, an enemy to approach and auto-attack, or a villager/resource/loot bag to interact. Tap abilities to use them. Spend ability points in **Abilities**. Sneak pauses normal attacks; Backstab requires approaching an unalerted enemy from behind. Scroll, pinch, or use +/− to zoom. Panels and the menu pause simulation.
+Move with **WASD / arrow keys** or **drag on the world for a floating touch joystick**. Directions follow the screen; release to stop. Tap/click enemies to target without chasing. Melee automatically attacks hostiles in range, prioritizing a selected enemy when reachable. Tap a villager/resource/loot bag, then move close to interact. Tap abilities to use them. Spend ability points in **Abilities**. Sneak pauses normal attacks; Backstab requires approaching an unalerted enemy from behind. Scroll, pinch, or use +/− to zoom. Panels and the menu pause simulation.
 
 ## Implemented
 

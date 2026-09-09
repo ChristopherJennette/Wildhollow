@@ -8,12 +8,13 @@
   <link rel="stylesheet" href="./css/game.css">
 </head>
 <body>
-  <canvas id="world" aria-label="Wildhollow game world. Tap ground to move, enemies to fight, and people or objects to interact."></canvas>
+  <canvas id="world" aria-label="Wildhollow game world. Use WASD, arrow keys or drag a floating touch joystick to move. Click enemies to target and people or objects to interact."></canvas>
+  <div id="joystick" hidden aria-hidden="true"><div id="joystick-knob"></div></div>
   <header id="hud" hidden>
     <div class="topline"><strong>WILDHOLLOW <small id="clock"></small></strong><button id="menu-button" aria-label="Open game menu">☰</button></div>
     <div id="resources"></div>
     <div class="level-line"><span id="level"></span><progress id="xp" aria-label="Character experience" max="100"></progress></div>
-    <div id="target">Tap ground to move · enemies to fight</div>
+    <div id="target">WASD / arrows / touch-drag · click to target</div>
   </header>
   <div id="notice" role="status" aria-live="polite"></div>
   <footer id="controls" hidden>
@@ -22,7 +23,7 @@
     <nav aria-label="Character panels"><button data-panel="character">Character</button><button data-panel="skills">Skills</button><button data-panel="abilities">Abilities</button><button data-panel="inventory">Pack</button></nav>
   </footer>
   <section id="menu" class="overlay">
-    <div class="card intro"><div class="eyebrow">A VILLAGE AT THE EDGE OF THE WILD</div><h1>Wildhollow</h1><p>Find your own way through the forest.</p><button id="continue" class="primary">Continue</button><button id="new-game">New Game</button><button id="reset" class="danger">Reset Progress</button><p class="help">Tap to walk. Tap an enemy to fight automatically.<br>Gather herbs and ore, trade with Mara, or craft with Bram.<br>Spend your starting ability point in Abilities.</p><small id="save-status">Version 0.1.0 · Local saves</small></div>
+    <div class="card intro"><div class="eyebrow">A VILLAGE AT THE EDGE OF THE WILD</div><h1>Wildhollow</h1><p>Find your own way through the forest.</p><button id="continue" class="primary">Continue</button><button id="new-game">New Game</button><button id="reset" class="danger">Reset Progress</button><p class="help">WASD / arrows to move, or drag on the world for a joystick.<br>Tap enemies to target. Melee is automatic in range.<br>Gather herbs and ore, trade with Mara, or craft with Bram.<br>Spend your starting ability point in Abilities.</p><small id="save-status">Version 0.1.0 · Local saves</small></div>
   </section>
   <section id="panel" class="overlay" hidden role="dialog" aria-modal="true" aria-labelledby="panel-title"><div class="card"><div class="panel-heading"><h2 id="panel-title"></h2><button id="close-panel" aria-label="Close panel">✕</button></div><div id="panel-body"></div></div></section>
   <script type="module" src="./js/game.js"></script>
