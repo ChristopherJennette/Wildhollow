@@ -4,7 +4,7 @@ import { CONFIG, FORMULAS, distance } from '../config.js';
 import { ENEMIES, ITEMS } from '../data/definitions.js';
 import { characterXP, skillXP, maxima } from './progression.js';
 import { move, moveDirect, setDestination, clearLine } from './movement.js';
-import { target } from '../world/world.js';
+import { target, acquireTarget } from '../world/world.js';
 
 export function damageEnemy(world, enemy, amount, skill, notify) {
   if(enemy.health<=0) return;
@@ -18,6 +18,7 @@ export function damageEnemy(world, enemy, amount, skill, notify) {
     const def=ENEMIES[enemy.kind];
     characterXP(world.player,def.xp,notify);
     world.drops.push({id:`loot-${enemy.id}-${enemy.generation}`,x:enemy.x,y:enemy.y,item:def.loot,quantity:1});
+    if(def.extraLoot)world.drops.push({id:`extra-${enemy.id}-${enemy.generation}`,x:enemy.x,y:enemy.y,item:def.extraLoot,quantity:1});
     enemy.respawnAt=world.elapsed+CONFIG.respawnSeconds;
     enemy.path=[];enemy.aggro=false;
     if(world.player.targetId===enemy.id) world.player.targetId=null;
@@ -48,7 +49,7 @@ export function updateCombat(world, dt, notify) {
     for(const enemy of world.enemies) if(inReach(enemy) && (!foe || distance(p,enemy)<distance(p,foe))) foe=enemy;
   }
   if(foe && !p.sneaking && p.attackTimer<=0) {
-    if(!target(world)) p.targetId=foe.id;
+    if(!target(world)) acquireTarget(world,inReach);
     cueAnimation(p,'attack');
     damageEnemy(world,foe,FORMULAS.melee(p.attributes,p.skills,ITEMS[p.weapon].damage),'oneHanded',notify);
     p.attackTimer=CONFIG.attackInterval;
@@ -57,7 +58,7 @@ export function updateCombat(world, dt, notify) {
   for(const enemy of world.enemies) {
     const def=ENEMIES[enemy.kind];
     if(enemy.health<=0) {
-      if(world.elapsed>=enemy.respawnAt) {Object.assign(enemy,enemy.spawn);enemy.health=def.health;enemy.aggro=false;enemy.armorXP=0;enemy.generation++;}
+      if(world.elapsed>=enemy.respawnAt) {Object.assign(enemy,enemy.spawn);enemy.health=def.health;enemy.aggro=false;enemy.armorXP=0;enemy.generation++;enemy.slowUntil=0;}
       continue;
     }
     const d=distance(enemy,p);
@@ -99,7 +100,7 @@ export function updateCombat(world, dt, notify) {
     } else {
       enemy.repath=(enemy.repath||0)-dt;
       if(enemy.repath<=0) {setDestination(world,enemy,p);enemy.repath=0.65;}
-      move(world,enemy,def.speed,dt);
+      move(world,enemy,def.speed*(enemy.slowUntil>world.elapsed?(enemy.slowFactor||1):1),dt);
     }
   }
   const max=maxima(p), recovery=p.penalty>0?0.5:1;

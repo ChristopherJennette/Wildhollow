@@ -1,6 +1,6 @@
 import { createMap } from './map.js';
 import { ENEMIES, NPCS, SKILLS } from '../data/definitions.js';
-import { CONFIG } from '../config.js';
+import { CONFIG, distance } from '../config.js';
 import { refreshAttributes, maxima } from '../systems/progression.js';
 
 export function createWorld() {
@@ -28,3 +28,14 @@ export function createWorld() {
 }
 export function hour(world) { return (world.time / CONFIG.daySeconds * 24) % 24; }
 export function target(world) { return world.enemies.find(e => e.id === world.player.targetId && e.health > 0); }
+
+export function acquireTarget(world,eligible=()=>true) {
+  const selected=target(world);
+  if(selected)return selected;
+  let closest=null;
+  for(const enemy of world.enemies) {
+    if(enemy.health>0 && eligible(enemy) && (!closest || distance(world.player,enemy)<distance(world.player,closest)))closest=enemy;
+  }
+  world.player.targetId=closest?.id || null;
+  return closest;
+}

@@ -106,7 +106,13 @@ export function paintActor(c,shape,color,state,frame,direction) {
 
 export function paintObject(c,shape,variant=0) {
   const rng=random(811+variant*721);
-  if(shape==='tree'){
+  if(shape==='berry'){
+    paintObject(c,'bush',variant);for(const [x,y] of [[-7,-8],[5,-6],[0,-11],[8,-10]])ellipse(c,x,y,2,2,'#a26364');
+  }else if(shape==='mushroom'){
+    for(const [x,y] of [[-6,-2],[4,0],[1,-7]]){rect(c,x-1,y-7,3,7,'#c8b699');ellipse(c,x,y-8,5,3,'#9f7955');rect(c,x-2,y-9,2,1,'#d5bc8e');}
+  }else if(shape==='wood'){
+    line(c,-13,-3,11,-12,'#514534',9);line(c,-13,-5,11,-14,'#93805c',3);ellipse(c,-13,-3,4,5,'#bea477');ellipse(c,-13,-3,2,3,'#87704b');
+  }else if(shape==='tree'){
     ellipse(c,3,3,28,10,'#26362b50');
     polygon(c,[{x:-6,y:1},{x:-4,y:-65},{x:4,y:-68},{x:5,y:1},{x:10,y:5},{x:1,y:3},{x:-9,y:5}],'#403e2c');
     rect(c,-2,-59,2,57,'#84745a');rect(c,1,-50,2,49,'#5f5741');

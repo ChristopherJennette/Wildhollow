@@ -33,7 +33,8 @@ export const SPRITES = {
   dirt: tile(['#8d8165', '#8b7e62'], 'dirt'), road: tile(['#a09679', '#9e9477', '#a2987b', '#9f9578'], 'road'),
   water: tile(['#4c6260'], 'water'), field: { ...tile(['#746e4e', '#797254'], 'field'), furrows: true },
   tree: object('tree', 72, 120, 36, 106), rock: object('rock', 32, 28, 16, 23),
-  bush: object('bush', 32, 28, 16, 23), fence: object('fence', 76, 64, 38, 40),
+  bush: object('bush', 32, 28, 16, 23),
+  berry: object('berry',32,28,16,23), mushroom: object('mushroom',32,28,16,23), wood: object('wood',40,28,20,23), fence: object('fence', 76, 64, 38, 40),
   sign: object('sign', 40, 52, 20, 45), loot: object('loot', 32, 28, 16, 22),
   fireball: object('fireball', 32, 32, 16, 16),
   hit: object('hit', 40, 40, 20, 20), heal: object('heal', 48, 48, 24, 24),
@@ -49,7 +50,7 @@ export const WORLD_OBJECTS = {
   sign: { sprite: 'sign', collision: { radius: 0, blocksTile: false } },
   bush: { sprite: 'bush', collision: { radius: 0, blocksTile: false } },
 };
-export const RESOURCE_SPRITES = { ore: 'rock', herb: 'bush' };
+export const RESOURCE_SPRITES = { ore: 'rock', herb: 'bush', berry: 'berry', mushroom: 'mushroom', wood: 'wood' };
 // Each layer may independently define src, frameWidth/Height, anchor, scale and offset.
 const building = () => ({ layers: { floor: { src: null }, walls: { src: null }, roof: { src: null } } });
 export const BUILDINGS = {

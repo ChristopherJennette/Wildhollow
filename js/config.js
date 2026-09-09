@@ -20,5 +20,11 @@ export const FORMULAS = {
   backstab: (a, s, weapon) => weapon * 2 + a.Dexterity * 1.5 + s.stealth.level * 0.8,
   fireball: (a, s) => 17 + a.Intelligence * 1.5 + s.destruction.level * 0.85,
   healingWord: (a, s) => 18 + a.Wisdom * 1.5 + s.restoration.level * 0.7,
+  powerStrike: (a,s,weapon) => weapon*1.6+a.Strength+s.oneHanded.level*0.5,
+  spark: (a,s) => 9+a.Intelligence+s.destruction.level*0.5,
+  frostNova: (a,s) => 13+a.Intelligence+s.destruction.level*0.6,
+  lifeDrain: (a,s) => 14+a.Intelligence+s.destruction.level*0.7,
+  whirlwind: (a,s,weapon) => weapon*1.4+a.Strength+s.oneHanded.level*0.6,
+  secondWind: (a,s) => 25+a.Wisdom+s.restoration.level*0.5,
   armor: (a, s) => Math.min(0.55, a.Dexterity * 0.005 + s.lightArmor.level * 0.003),
 };

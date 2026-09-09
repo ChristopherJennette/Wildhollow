@@ -11,7 +11,7 @@ export function saveGame(world,storage=localStorage) {
     const player=Object.fromEntries(fields.map(key=>[key,world.player[key]]));
     const data={version:CONFIG.saveVersion,player,time:world.time,elapsed:world.elapsed,
       npcs:world.npcs.map(({id,x,y,state})=>({id,x,y,state})),
-      enemies:world.enemies.map(({id,x,y,health,respawnAt,armorXP,generation})=>({id,x,y,health,respawnAt,armorXP,generation})),
+      enemies:world.enemies.map(({id,x,y,health,respawnAt,armorXP,generation,slowUntil,slowFactor})=>({id,x,y,health,respawnAt,armorXP,generation,slowUntil,slowFactor})),
       resources:world.map.resources.map(({id,readyAt})=>({id,readyAt})),drops:world.drops};
     storage.setItem(CONFIG.saveKey,JSON.stringify(data));return {ok:true};
   } catch {return {ok:false,error:'Saving unavailable. Check browser storage settings or free space.'};}
@@ -47,6 +47,7 @@ export function loadGame(storage=localStorage) {
     for(const enemy of world.enemies) {
       const saved=data.enemies?.find(e=>e.id===enemy.id);if(!saved) continue;
       enemy.health=finite(saved.health,enemy.health,0,enemy.health);
+      enemy.slowUntil=finite(saved.slowUntil,0);enemy.slowFactor=finite(saved.slowFactor,1,0.1,1);
       enemy.respawnAt=finite(saved.respawnAt,0);enemy.armorXP=finite(saved.armorXP,0,0,20);enemy.generation=finite(saved.generation,0);
       if(Number.isFinite(saved.x)&&Number.isFinite(saved.y)&&walkable(world,saved.x,saved.y)) {enemy.x=saved.x;enemy.y=saved.y;}
     }

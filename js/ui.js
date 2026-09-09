@@ -1,8 +1,8 @@
-import { SKILLS, ABILITIES, ITEMS, ENEMIES } from './data/definitions.js';
+import { SKILLS, ABILITIES, ITEMS, ENEMIES, RECIPES, SHOP } from './data/definitions.js';
 import { FORMULAS } from './config.js';
 import { maxima } from './systems/progression.js';
 import { unlock, useAbility } from './systems/abilities.js';
-import { useItem, trade } from './systems/inventory.js';
+import { useItem, trade, craft, canCraft, restoration } from './systems/inventory.js';
 import { hour, target } from './world/world.js';
 const $=id=>document.getElementById(id);
 const row=(title,detail,right='')=>`<div class="row"><div>${title}<small>${detail}</small></div>${right}</div>`;
@@ -22,6 +22,7 @@ export class UI {
       const world=getWorld(),p=world.player;
       if(button.dataset.unlock && unlock(p,button.dataset.unlock))this.notify(`${ABILITIES[button.dataset.unlock].name} unlocked.`);
       if(button.dataset.item)useItem(p,button.dataset.item,this.notify);
+      if(button.dataset.craft)craft(world,button.dataset.craft,this.notify);
       if(button.dataset.trade)trade(world,world.npcs.find(n=>n.id===this.npcId),button.dataset.trade,button.dataset.id,this.notify);
       this.renderPanel();this.update();actions.save();
     };
@@ -56,13 +57,18 @@ export class UI {
     if(this.panel==='abilities') {
       body=`<p class="tag">${p.points} ability points available</p>`;
       for(const [id,def] of Object.entries(ABILITIES))body+=row(def.name,`${def.description}<br>${def.cost} ${def.resource} · ${def.cooldown}s cooldown`,p.abilities.includes(id)?'<span class="tag">Unlocked</span>':`<button data-unlock="${id}" ${p.points<1?'disabled':''}>Unlock · 1</button>`);
-      body+='<p class="muted">Abilities scale with your skills and attributes. Earn points by leveling through combat, exploration, trade, or crafting.</p>';
+      body+='<p class="muted">Swipe the ability bar for more skills. Offensive abilities select the nearest enemy when no target is selected. Abilities scale with your skills and attributes. Earn points by leveling through combat, exploration, trade, or crafting.</p>';
     }
     if(this.panel==='inventory') {
       body=`<p class="tag">${p.gold} gold · No carrying limit</p>`;
       for(const [id,count] of Object.entries(p.inventory)) {
-        const def=ITEMS[id];body+=row(`${def.name} ×${count}`,def.damage?`${def.damage} weapon damage`:def.heal?`Restores ${def.heal} health`:`Material · sells for ${def.value} gold`,def.type==='weapon'?`<button data-item="${id}" ${p.weapon===id?'disabled':''}>${p.weapon===id?'Equipped':'Equip'}</button>`:def.heal?`<button data-item="${id}">Use</button>`:'');
+        const def=ITEMS[id],restore=Object.entries(restoration(def)).map(([resource,n])=>`${n} ${resource}`).join(' + ');
+        body+=row(`${def.name} ×${count}`,def.damage?`${def.damage} weapon damage`:restore?`Restores ${restore}`:`Material · sells for ${def.value} gold`,def.type==='weapon'?`<button data-item="${id}" ${p.weapon===id?'disabled':''}>${p.weapon===id?'Equipped':'Equip'}</button>`:restore?`<button data-item="${id}">Use</button>`:'');
       }
+    }
+    if(this.panel==='inventory'){
+      body+='<h3>Craft & brew</h3><p class="muted">Use herbs directly for 5 health, or turn them into stronger remedies. Forging requires Bram.</p>';
+      for(const [id,recipe] of Object.entries(RECIPES))if(!recipe.station)body+=this.recipeRow(id,recipe,p);
     }
     if(this.panel==='npc') {
       const npc=world.npcs.find(n=>n.id===this.npcId);
@@ -70,13 +76,20 @@ export class UI {
       const home=world.map.buildings.find(b=>b.id===npc.home),work=world.map.buildings.find(b=>b.id===npc.workplace);
       body=`<p class="description">Home: ${home.name}<br>Work: ${work.name}<br>Schedule: work 07:00–19:00, then home.<br>Currently: ${npc.state} · Your gold: ${p.gold}</p>`;
       if(npc.occupation==='Merchant') {
-        body+=row('Healing draught','Buy for 12 gold.',`<button data-trade="buy" ${p.gold<12?'disabled':''}>Buy · 12</button>`);
-        for(const [id,count] of Object.entries(p.inventory))if(ITEMS[id].type==='material')body+=row(`${ITEMS[id].name} ×${count}`,`${ITEMS[id].value} gold each`,`<button data-trade="sell" data-id="${id}">Sell one</button>`);
-      } else if(npc.occupation==='Blacksmith')body+=row('Forge iron sword',`Requires 3 iron ore. You have ${p.inventory.ore||0}.<br>Grants Smithing and character XP.`,`<button data-trade="craft" ${(p.inventory.ore||0)<3?'disabled':''}>Forge</button>`);
+        for(const [id,price] of Object.entries(SHOP))body+=row(ITEMS[id].name,`Buy for ${price} gold.`,`<button data-trade="buy" data-id="${id}" ${p.gold<price?'disabled':''}>Buy · ${price}</button>`);
+        body+='<h3>Sell items</h3>';
+        for(const [id,count] of Object.entries(p.inventory))if(id!==p.weapon)body+=row(`${ITEMS[id].name} ×${count}`,`${ITEMS[id].value} gold each`,`<button data-trade="sell" data-id="${id}">Sell one</button>`);
+      } else if(npc.occupation==='Blacksmith') {
+        for(const [id,recipe] of Object.entries(RECIPES))if(recipe.station==='Blacksmith')body+=this.recipeRow(id,recipe,p,true);
+      }
       else if(npc.occupation==='Innkeeper')body+=row('A quiet room','Restore resources and remove weariness.',`<button data-trade="rest" ${p.gold<4?'disabled':''}>Rest · 4</button>`);
       else body+='<p class="description">“Herbs grow around the village, and ore lies near the forest edge. Stay close to the road if you want to avoid the wolves.”</p>';
     }
     $('panel-body').innerHTML=body;
+  }
+  recipeRow(id,recipe,player,atSmith=false) {
+    const ingredients=Object.entries(recipe.ingredients).map(([item,n])=>`${ITEMS[item].name}: ${player.inventory[item]||0}/${n}`).join(' · ');
+    return row(recipe.name,`${ingredients}<br>Trains ${SKILLS[recipe.skill].name}.`, `<button ${atSmith?`data-trade="craft" data-id="${id}"`:`data-craft="${id}"`} ${canCraft(player,recipe)?'':'disabled'}>Make</button>`);
   }
   update() {
     const world=this.getWorld();if(!world)return;const p=world.player,max=maxima(p);

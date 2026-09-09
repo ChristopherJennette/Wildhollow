@@ -20,3 +20,6 @@
   border: 2px solid #eee5be;
   background: #9cac84b3;
 }
+
+#hotbar { display: flex; overflow-x: auto; scrollbar-width: thin; scroll-snap-type: x proximity; padding-bottom: 3px; }
+#hotbar button { flex: 0 0 calc((100% - 15px) / 4); scroll-snap-align: start; }
