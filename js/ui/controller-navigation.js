@@ -31,6 +31,8 @@ export class ControllerNavigation {
       element.selectedIndex = (element.selectedIndex + delta + element.options.length) % element.options.length;
       element.dispatchEvent(new Event('change', { bubbles: true }));
     } else if (delta > 0) element.click();
+    // Dialogs may deliberately move focus (for example to Cancel). Preserve it.
+    if (this.document.activeElement !== element && this.document.activeElement !== this.document.body) return;
     // Panels replace their body after actions. Recover focus at the same row.
     const updated = this.controls(root);
     this.focus(updated[Math.min(index, updated.length - 1)]);
