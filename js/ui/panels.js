@@ -1,7 +1,10 @@
+import { renderCharacter } from './character-panel.js';
+import { renderInventory } from './inventory-panel.js';
+import { renderGuide } from './guide-panel.js';
 import { HOTBAR_SIZE } from '../systems/hotbar.js';
 import { SKILLS, ABILITIES, ITEMS, RECIPES, SHOP } from '../data/definitions.js';
 import { FORMULAS } from '../config.js';
-import { canCraft, restoration } from '../systems/inventory.js';
+import { canCraft } from '../systems/inventory.js';
 
 // Rendering only: return markup without DOM access or changes to the world.
 // Keep data-* attributes stable; UI owns events and controller navigation uses them.
@@ -12,23 +15,16 @@ const renderers = {
   skills: renderSkills,
   abilities: renderAbilities,
   inventory: renderInventory,
+  crafting: renderCrafting,
+  guide: renderGuide,
 };
 
-export function renderPanelContent(name, world, npcId) {
+export function renderPanelContent(name, world, npcId, options = {}) {
   if (name === 'npc') return renderNpc(world, npcId);
   return {
-    title: name[0].toUpperCase() + name.slice(1),
-    body: renderers[name]?.(world) || '',
+    title: name === 'guide' ? 'Controls & field guide' : name[0].toUpperCase() + name.slice(1),
+    body: renderers[name]?.(world, options.inventoryFilter) || '',
   };
-}
-
-function renderCharacter(world) {
-  const p = world.player;
-  let body = `<p class="description">Level ${p.level} · ${Math.floor(p.xp)} / ${FORMULAS.characterXP(p.level)} XP<br><span class="tag">${p.points} ability points · ${p.gold} gold</span></p>`;
-  for (const [name, value] of Object.entries(p.attributes)) body += row(name, 'Grows through associated skill levels.', `<strong>${value.toFixed(2)}</strong>`);
-  body += `<p class="muted">World: ${world.map.seed===undefined?'Original village':`Seed ${world.map.seed}`}.</p>`;
-  body += `<p class="muted">${p.penalty>0?`Weary: ${Math.ceil(p.penalty)}s of slower recovery.`:'Well rested.'} Attributes start at 8 and grow automatically.</p>`;
-  return body;
 }
 
 function renderSkills(world) {
@@ -45,42 +41,24 @@ function renderSkills(world) {
 
 function renderAbilities(world) {
   const p = world.player;
-  let body = `<p class="tag">${p.points} ability points available</p><p class="muted">Assign learned skills to slots 1–5. Press the matching number or click/tap the slot.</p>`;
+  let body = `<p class="tag">${p.points} ability points available</p><p class="muted">Assign learned skills to slots 1–5. Press the matching number or click/tap the slot.</p><div class="ability-grid">`;
   for (const [id, def] of Object.entries(ABILITIES)) {
     const action = p.abilities.includes(id)
       ? slotSelector(p, id)
       : `<button data-unlock="${id}" ${p.points < 1 ? 'disabled' : ''}>Unlock · 1</button>`;
-    body += row(
-      def.name,
-      `${def.description}<br>${def.cost} ${def.resource} · ${def.cooldown}s cooldown`,
-      action
-    );
+    body += `<article class="ability-card"><div><span class="eyebrow">${p.abilities.includes(id) ? 'LEARNED' : 'UNLEARNED'}</span><h3>${def.name}</h3></div><p>${def.description}</p><p class="tag">${def.cost} ${def.resource} · ${def.cooldown}s cooldown</p><div class="ability-action"><small>${p.abilities.includes(id) ? 'Hotbar slot' : '1 ability point'}</small>${action}</div></article>`;
   }
-  body += '<p class="muted">Offensive abilities select the nearest enemy when no target is selected. Abilities scale with your skills and attributes. Earn points by leveling through combat, exploration, trade, or crafting.</p>';
+  body += '</div><p class="muted">Offensive abilities select the nearest enemy when no target is selected. Abilities scale with your skills and attributes. Earn points by leveling through combat, exploration, trade, or crafting.</p>';
   return body;
 }
 
-function renderInventory(world) {
-  const p = world.player;
-  let body = `<p class="tag">${p.gold} gold · No carrying limit</p>`;
-  for (const [id, count] of Object.entries(p.inventory)) {
-    const def = ITEMS[id],
-      restore = Object.entries(restoration(def)).map(([resource, n]) => `${n} ${resource}`).join(' + ');
-    const detail = def.damage ? `${def.damage} weapon damage`
-      : restore ? `Restores ${restore}` : `Material · sells for ${def.value} gold`;
-    let action = '';
-    if (def.type === 'weapon') {
-      const equipped = p.weapon === id;
-      action = `<button data-item="${id}" ${equipped ? 'disabled' : ''}>${equipped ? 'Equipped' : 'Equip'}</button>`;
-    } else if (restore) {
-      action = `<button data-item="${id}">Use</button>`;
-    }
-    body += row(`${def.name} ×${count}`, detail, action);
+function renderCrafting(world) {
+  const player = world.player;
+  let body = '<div class="section-heading"><div><h3>Craft & brew</h3><p class="muted">Turn gathered materials into something useful. Visit Bram for forged equipment.</p></div></div><div class="recipe-grid">';
+  for (const [id, recipe] of Object.entries(RECIPES)) {
+    if (!recipe.station) body += `<article class="recipe-card">${recipeRow(id, recipe, player)}</article>`;
   }
-  body += '<h3>Craft & brew</h3><p class="muted">Use herbs directly for 5 health, or turn them into stronger remedies. Forging requires Bram.</p>';
-  for (const [id, recipe] of Object.entries(RECIPES))
-    if (!recipe.station) body += recipeRow(id, recipe, p);
-  return body;
+  return body + '</div>';
 }
 
 function renderNpc(world, npcId) {

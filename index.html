@@ -3,30 +3,40 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#182722">
+  <meta name="theme-color" content="#101d1d">
   <title>Wildhollow</title>
   <link rel="stylesheet" href="./css/game.css">
 </head>
 <body>
-  <canvas id="world" aria-label="Wildhollow game world. Use WASD, arrow keys or drag a floating touch joystick to move. Click enemies to target and people or objects to interact."></canvas>
+  <canvas id="world" aria-label="Wildhollow world. WASD, left stick or touch drag to move. Select enemies to target; approach people and resources to interact."></canvas>
   <div id="joystick" hidden aria-hidden="true"><div id="joystick-knob"></div></div>
   <header id="hud" hidden>
-    <div class="topline"><strong>WILDHOLLOW <small id="clock"></small></strong><button id="menu-button" aria-label="Open game menu">☰</button></div>
+    <div class="hud-identity"><button data-panel="character" class="avatar-button" aria-label="Open character and inventory">W</button><div><span class="eyebrow">THE WANDERER</span><div class="level-line"><span id="level"></span><progress id="xp" aria-label="Character experience" max="100"></progress></div></div><button id="menu-button" class="icon-button" aria-label="Pause and open menu">Ⅱ</button></div>
     <div id="resources"></div>
-    <div class="level-line"><span id="level"></span><progress id="xp" aria-label="Character experience" max="100"></progress></div>
-    <div id="target">WASD / arrows / touch-drag · click to target</div>
+    <div class="world-info"><span id="location"></span><span id="clock"></span></div>
+    <div id="target"></div>
   </header>
   <div id="notice" role="status" aria-live="polite"></div>
   <footer id="controls" hidden>
-    <div class="utility"><button id="sneak" aria-pressed="false">Sneak</button><span id="location"></span><button id="zoom-out" aria-label="Zoom out">−</button><button id="zoom-in" aria-label="Zoom in">+</button></div>
-    <div id="hotbar"></div>
-    <nav aria-label="Character panels"><button data-panel="character">Character</button><button data-panel="skills">Skills</button><button data-panel="abilities">Abilities</button><button data-panel="inventory">Pack</button></nav>
+    <div class="utility"><button id="sneak" aria-pressed="false">Sneak <small>LS</small></button><span class="control-caption">YOUR ACTIVE ABILITIES</span><div class="zoom-controls"><button id="zoom-out" aria-label="Zoom out">−</button><button id="zoom-in" aria-label="Zoom in">+</button></div></div>
+    <div id="hotbar" aria-label="Ability hotbar"></div>
+    <nav class="game-nav" aria-label="Character shortcuts"><button data-panel="character">Character <kbd>C</kbd></button><button data-panel="inventory">Inventory <kbd>I</kbd></button><button data-panel="abilities">Abilities <kbd>K</kbd></button></nav>
   </footer>
-  <section id="menu" class="overlay">
-    <div class="card intro"><div class="eyebrow">A VILLAGE AT THE EDGE OF THE WILD</div><h1>Wildhollow</h1><p>Find your own way through the forest.</p><button id="continue" class="primary">Continue</button><button id="new-game">New Game</button><button id="reset" class="danger">Reset Progress</button><p class="help">WASD / arrows to move, or drag on the world for a joystick.<br>Tap enemies to target. Melee is automatic in range.<br>Gather herbs and ore, trade with Mara, or craft with Bram.<br>Spend your starting ability point in Abilities.</p><p class="help">Xbox: left stick moves · right stick targets · A interacts · B clears target.<br>X / Y / LB / RB / RT: abilities 1–5 · LS: sneak · RS: cycle target.<br>D-pad: ↑ Character / ← Skills / → Abilities / ↓ Pack · View: Pack.<br>Menu: pause · LT + right stick ↑/↓: zoom.<br>Menus: D-pad ↑/↓ or left stick selects · A confirms · B backs out.<br>Ability slot selectors: ←/→ changes slot · Right stick scrolls.<br>Connect your controller and press a button, then release all controls.</p><small id="save-status">Version 1.3.3 · Local saves</small></div>
+  <section id="menu" class="overlay menu-overlay" aria-label="Game menu">
+    <div class="card intro">
+      <div class="menu-story"><span class="eyebrow">A VILLAGE AT THE EDGE OF THE WILD</span><div class="crest" aria-hidden="true">✧</div><h1>Wildhollow</h1><p class="menu-subtitle">A quiet village.<br>A world waiting beyond.</p><span class="story-rule"></span><p class="muted">Gather. Grow. Find your own way.</p></div>
+      <div class="menu-actions"><span class="eyebrow">YOUR JOURNEY</span><button id="continue" class="primary">Continue journey <span aria-hidden="true">→</span></button><button id="new-game">Begin a new journey</button><button id="help-button">Controls & field guide</button><div class="menu-bottom"><small id="save-status">Version 1.4.0 · Local saves</small><button id="reset" class="text-button danger">Reset progress</button></div></div>
+    </div>
   </section>
-  <section id="panel" class="overlay" hidden role="dialog" aria-modal="true" aria-labelledby="panel-title"><div class="card"><div class="panel-heading"><h2 id="panel-title"></h2><button id="close-panel" aria-label="Close panel">✕</button></div><div id="panel-body"></div></div></section>
-  <section id="confirmation" class="overlay" hidden role="dialog" aria-modal="true" aria-labelledby="confirm-message"><div class="card"><p id="confirm-message"></p><button id="confirm-cancel">Cancel</button> <button id="confirm-accept" class="danger">Confirm</button></div></section>
+  <section id="panel" class="overlay" hidden role="dialog" aria-modal="true" aria-labelledby="panel-title">
+    <div class="card character-shell">
+      <div class="panel-heading"><div><span id="panel-kicker" class="eyebrow">THE WANDERER’S JOURNAL</span><h2 id="panel-title">Character</h2></div><button id="close-panel" class="icon-button" aria-label="Close panel">✕</button></div>
+      <nav id="panel-tabs" class="panel-tabs" aria-label="Journal sections"><button data-section="character">Character</button><button data-section="inventory">Inventory</button><button data-section="crafting">Crafting</button><button data-section="skills">Skills</button><button data-section="abilities">Abilities</button></nav>
+      <div id="panel-body"></div>
+      <div class="panel-footer"><span>World paused · Take your time</span><span class="keyboard-hint">Esc to return</span><span class="pad-label">LB / RB sections · A select · B return</span></div>
+    </div>
+  </section>
+  <section id="confirmation" class="overlay" hidden role="dialog" aria-modal="true" aria-labelledby="confirm-message"><div class="card confirmation-card"><span class="eyebrow">BEFORE YOU CONTINUE</span><h2>Are you sure?</h2><p id="confirm-message"></p><div class="dialog-actions"><button id="confirm-cancel" class="primary">Keep exploring</button><button id="confirm-accept" class="danger">Confirm</button></div></div></section>
   <script type="module" src="./js/game.js"></script>
 </body>
 </html>

@@ -23,7 +23,7 @@ export function runPanelTests() {
     const world = createWorld({ legacy: true });
     const [id, recipe] = Object.entries(RECIPES).find(([, recipe]) => !recipe.station);
     for (const [item, count] of Object.entries(recipe.ingredients)) world.player.inventory[item] = count;
-    const { body } = renderPanelContent('inventory', world);
+    const { body } = renderPanelContent('crafting', world);
     for (const [item, count] of Object.entries(recipe.ingredients)) {
       assert(body.includes(`${ITEMS[item].name}: ${count}/${count}`), 'Ingredient interpolation broken');
     }
@@ -41,7 +41,7 @@ export function runPanelTests() {
   test('Rendering every panel leaves gameplay and save data untouched', () => {
     const world = createWorld({ legacy: true });
     const before = JSON.stringify(world);
-    for (const name of ['character', 'skills', 'abilities', 'inventory']) renderPanelContent(name, world);
+    for (const name of ['character', 'skills', 'abilities', 'inventory', 'crafting', 'guide']) renderPanelContent(name, world);
     for (const npc of world.npcs) renderPanelContent('npc', world, npc.id);
     assert(JSON.stringify(world) === before, 'Renderer mutated world');
   });

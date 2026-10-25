@@ -28,6 +28,8 @@ export function installController({ getWorld, isPlaying, camera, ui, platform = 
     const held = button => pad.down[button];
     const root = ui.controllerRoot();
     if (root) {
+      if (ui.panel && pressed(B.LB)) { ui.cyclePanel?.(-1); return zero(); }
+      if (ui.panel && pressed(B.RB)) { ui.cyclePanel?.(1); return zero(); }
       navigation.step(root, held(B.DOWN) || pad.move.y > 0.5 ? 1 : held(B.UP) || pad.move.y < -0.5 ? -1 : 0, now);
       if (pressed(B.B) || pressed(B.MENU)) { ui.controllerBack(); return zero(); }
       if (pressed(B.A) || (pressed(B.RIGHT) && document.activeElement?.tagName === 'SELECT')) navigation.activate(root);
