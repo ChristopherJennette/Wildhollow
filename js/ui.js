@@ -1,3 +1,4 @@
+import { VERSION } from './version.js';
 import { HOTBAR_SIZE, assignSlot, useSlot } from './systems/hotbar.js';
 import { SKILLS, ABILITIES, ITEMS, ENEMIES, RECIPES, SHOP } from './data/definitions.js';
 import { FORMULAS } from './config.js';
@@ -16,7 +17,7 @@ export class UI {
     document.querySelectorAll('[data-panel]').forEach(button=>button.onclick=()=>this.openPanel(button.dataset.panel));
     $('sneak').onclick=()=>{const p=getWorld().player;p.sneaking=!p.sneaking;this.notify(p.sneaking?'Sneaking: automatic attacks paused.':'Walking: automatic attacks enabled.');this.update();};
     $('zoom-in').onclick=()=>actions.zoom(1.15);$('zoom-out').onclick=()=>actions.zoom(1/1.15);
-    $('hotbar').innerHTML=Array.from({length:HOTBAR_SIZE},(_,slot)=>`<button data-slot="${slot}" aria-keyshortcuts="${slot+1}"><b>${slot+1}</b><span>Empty</span><small>Assign</small></button>`).join('');
+    $('hotbar').innerHTML=Array.from({length:HOTBAR_SIZE},(_,slot)=>`<button data-slot="${slot}" aria-keyshortcuts="${slot+1}"><b>${slot+1}<span class="pad-label"> / ${['X','Y','LB','RB','RT'][slot]}</span></b><span>Empty</span><small>Assign</small></button>`).join('');
     $('hotbar').onclick=event=>{const button=event.target.closest('[data-slot]');if(!button)return;const slot=Number(button.dataset.slot);if(!getWorld().player.hotbar[slot])this.openPanel('abilities');else useSlot(getWorld(),slot,this.notify);this.update();};
     $('panel-body').onchange=event=>{
       const select=event.target.closest('[data-slot-ability]');if(!select)return;
@@ -33,7 +34,10 @@ export class UI {
       if(button.dataset.trade)trade(world,world.npcs.find(n=>n.id===this.npcId),button.dataset.trade,button.dataset.id,this.notify);
       this.renderPanel();this.update();actions.save();
     };
+    $('confirm-cancel').onclick=()=>this.cancelConfirmation();
+    $('confirm-accept').onclick=()=>{const action=this.confirmedAction;this.cancelConfirmation();action?.();};
     document.addEventListener('keydown',event=>{
+      if(!$('confirmation').hidden) {if(event.key==='Escape')this.cancelConfirmation();return;}
       if(event.key==='Escape') {if(this.panel)this.closePanel();else if(!$('menu').hidden&&getWorld())actions.continueGame();else if(getWorld())actions.menu();}
       if(event.key==='Tab' && this.panel) {
         const focusable=[...$('panel').querySelectorAll('button:not(:disabled),select:not(:disabled)')],first=focusable[0],last=focusable.at(-1);
@@ -42,10 +46,21 @@ export class UI {
       }
     });
   }
+  controllerRoot() {return !$('confirmation').hidden?$('confirmation'):this.panel?$('panel'):!$('menu').hidden?$('menu'):null;}
+  controllerBack() {
+    if(!$('confirmation').hidden)this.cancelConfirmation();
+    else if(this.panel)this.closePanel();
+    else if(this.getWorld())this.actions.continueGame();
+  }
+  confirmAction(message,action) {
+    this.confirmedAction=action;this.confirmReturn=document.activeElement;
+    $('confirm-message').textContent=message;$('confirmation').hidden=false;$('confirm-cancel').focus();
+  }
+  cancelConfirmation() {this.confirmedAction=null;$('confirmation').hidden=true;this.confirmReturn?.focus();}
   notify=(message)=>{clearTimeout(this.noticeTimer);$('notice').textContent=message;$('notice').classList.add('visible');this.noticeTimer=setTimeout(()=>$('notice').classList.remove('visible'),4200);};
   menu(show,canContinue=true,error='') {
     $('menu').hidden=!show;$('hud').hidden=show;$('controls').hidden=show;
-    $('continue').disabled=!canContinue;$('save-status').textContent=error||'Version 0.1.0 · Local saves';
+    $('continue').disabled=!canContinue;$('save-status').textContent=error||`Version ${VERSION} · Local saves`;
   }
   closePanel() {this.panel=null;$('panel').hidden=true;this.returnFocus?.focus();}
   openPanel(name,npcId) {this.returnFocus=document.activeElement;this.panel=name;this.npcId=npcId;$('panel').hidden=false;this.renderPanel();$('close-panel').focus();}

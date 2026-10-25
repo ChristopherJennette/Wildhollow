@@ -26,3 +26,8 @@
 #hotbar b { position: absolute; top: 2px; left: 6px; font-size: 10px; color: #e4cb88; }
 #hotbar span { display: block; overflow-wrap: anywhere; }
 select { font: inherit; min-height: 44px; max-width: 120px; border: 1px solid #70816a; border-radius: 6px; background: #2c3d34; color: inherit; padding: 5px; }
+
+.pad-label { display: none !important; }
+.controller-connected .pad-label { display: inline !important; }
+.controller-focus, select:focus-visible { outline: 3px solid #e7c77b; outline-offset: 2px; }
+#confirmation { z-index: 10; }

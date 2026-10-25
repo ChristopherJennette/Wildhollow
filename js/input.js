@@ -18,11 +18,12 @@ export function installInput(canvas, camera, getWorld, isPlaying, notify, platfo
     const world = getWorld();
     if (world) world.player.moveInput = { x: 0, y: 0 };
   }
-  function update() {
+  function update(gamepad = { x: 0, y: 0 }) {
     if (!isPlaying()) { clear(); return; }
     const x = Number(keys.has('KeyD') || keys.has('ArrowRight')) - Number(keys.has('KeyA') || keys.has('ArrowLeft'));
     const y = Number(keys.has('KeyS') || keys.has('ArrowDown')) - Number(keys.has('KeyW') || keys.has('ArrowUp'));
-    getWorld().player.moveInput = screenDirection(x || y ? x : stick.x, x || y ? y : stick.y);
+    const movement = x || y ? { x, y } : stick.x || stick.y ? stick : gamepad;
+    getWorld().player.moveInput = screenDirection(movement.x, movement.y);
   }
   document.addEventListener('keydown', event => {
     if (!isPlaying() || event.ctrlKey || event.metaKey || event.altKey) return;

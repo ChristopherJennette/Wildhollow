@@ -5,6 +5,7 @@ import { createWorld } from './world/world.js';
 import { Camera } from './camera.js';
 import { Renderer } from './renderer.js';
 import { installInput } from './input.js';
+import { installController } from './input/controller.js';
 import { UI } from './ui.js';
 import { updateCombat } from './systems/combat.js';
 import { updateNPCs } from './systems/npcSimulation.js';
@@ -17,11 +18,11 @@ let world=null,menuOpen=true,accumulator=0,last=0,npcTimer=0,saveTimer=0,uiTimer
 const stored=loadGame();
 const ui=new UI(()=>world,{
   newGame(){
-    if((world||loadGame().world)&&!confirm('Start a new game? This replaces your saved progress.'))return;
-    start(createWorld());save();ui.notify('Welcome to Wildhollow. Open Abilities to spend your starting point.');
+    const begin=()=>{start(createWorld());save();ui.notify('Welcome to Wildhollow. Open Abilities to spend your starting point.');};
+    if(world||loadGame().world)ui.confirmAction('Start a new game? This replaces your saved progress.',begin);else begin();
   },
   continueGame(){const loaded=world?{world}:loadGame();if(loaded.world)start(loaded.world);else ui.notify(loaded.error||'No saved game.');},
-  reset(){if(!confirm('Permanently delete your Wildhollow progress?'))return;if(!resetSave()){ui.notify('Could not clear browser storage.');return;}world=null;menuOpen=true;ui.closePanel();ui.menu(true,false);ui.notify('Progress cleared. Start a new game.');},
+  reset(){ui.confirmAction('Permanently delete your Wildhollow progress?',()=>{if(!resetSave()){ui.notify('Could not clear browser storage.');return;}world=null;menuOpen=true;ui.closePanel();ui.menu(true,false);ui.notify('Progress cleared. Start a new game.');});},
   menu(){save();menuOpen=true;ui.closePanel();ui.menu(true,!!world);},
   zoom:amount=>camera.scale(amount), save,
 });
@@ -42,12 +43,13 @@ function interact() {
   }
 }
 const input=installInput(canvas,camera,()=>world,()=>world&&!menuOpen&&!ui.panel,ui.notify);
+const controller=installController({getWorld:()=>world,isPlaying:()=>world&&!menuOpen&&!ui.panel,camera,ui});
 window.addEventListener('resize',()=>{camera.resize();renderer.draw(world||preview);});
 document.addEventListener('visibilitychange',()=>{if(document.hidden)save();last=0;accumulator=0;});
 window.addEventListener('pagehide',save);
 function frame(timestamp) {
   const dt=last?Math.min((timestamp-last)/1000,0.1):0;last=timestamp;
-  input.update();
+  input.update(controller.update(timestamp));
   if(world&&!menuOpen&&!ui.panel&&!document.hidden) {
     accumulator+=dt;
     while(accumulator>=CONFIG.tick) {
