@@ -1,4 +1,4 @@
-# Wildhollow module guide — v1.3.1
+# Wildhollow module guide — v1.3.3
 
 Wildhollow already uses ES modules. Keep vanilla JavaScript, Canvas, relative URLs and no production dependencies or build step. The world uses Cartesian coordinates; projection belongs to the camera/renderer. Do not duplicate an entire source tree for each update: preserve immutable release branches and use narrow commits.
 
@@ -11,7 +11,8 @@ Wildhollow already uses ES modules. Keep vanilla JavaScript, Canvas, relative UR
 | Controller menu focus, repeat, selectors | `js/ui/controller-navigation.js` | `tests/controller.js` |
 | Nearby/directional controller targeting | `js/input/targets.js` | `tests/gamepad.js` |
 | Keyboard, pointer, touch | `js/input.js` | `tests/input.js` |
-| Panels, trading/crafting buttons, HUD | `js/ui.js`, `css/game.css` | `tests/expansion.js`, manual UI checks |
+| Panel markup and recipe/ability selectors | `js/ui/panels.js` | `tests/panels.js` |
+| UI actions, focus, trading/crafting buttons, HUD | `js/ui.js`, `css/game.css` | `tests/expansion.js`, manual UI checks |
 | Initialization, pause, loop, interaction dispatch | `js/game.js` | simulation and input checks |
 | Content and balance | `js/data/definitions.js`, `js/config.js` | simulation and expansion checks |
 | World generation and collision data | `js/world/` | `tests/worldGeneration.js` |
@@ -30,8 +31,8 @@ Controller UI navigation uses the existing enabled buttons/selects. Gamepad A in
 
 ## Focused review and recommended next work
 
-1. **Make dense modules readable before splitting them further.** `ui.js`, world generation and the game loop pack multiple operations onto single lines. Formatting into readable statements will improve narrow edits. Avoid a broad behavior rewrite alongside formatting.
-2. **Extract UI panel rendering when the next panel feature arrives.** Move character/skills/abilities, inventory/crafting and NPC/trading renderers into `js/ui/panels/`. Keep UI state, focus and event routing centralized. Current modules are small enough that arbitrary additional splitting would add navigation overhead.
+1. **Continue readability work narrowly.** Game loop, input and UI were expanded in v1.3.2/v1.3.3. World generation remains a useful future target. Avoid a broad behavior rewrite alongside formatting.
+2. **Keep panel rendering separate from events.** `js/ui/panels.js` exposes `renderPanelContent(name, world, npcId)` returning `{ title, body }`. Named renderers cover character, skills, abilities, inventory and NPCs. They do not access the DOM or mutate gameplay. `ui.js` keeps event routing, focus and panel state. Preserve `data-*` hooks for pointer and controller parity. Split individual panel files only as they grow.
 3. **Protect save access at the browser boundary.** `save.js` defaults parameters to `localStorage` before entering its try/catch. Browsers that throw on accessing that property can bypass the intended fallback. Resolve storage inside the guarded code; test denied storage, malformed saves and quota failures. Preserve rejected saves and require explicit confirmation before replacing them.
 4. **Add an in-browser integration suite/CI.** The existing checks exercise simulation and mocked input surfaces well, but do not prove real DOM focus, layout or actual Gamepad API behavior. Add actual-menu tests for unlocking, selector reassignment, buying, selling, crafting and confirmation cancellation. Keep tooling optional for development; production should stay static.
 5. **Consider event-driven HUD updates.** `UI.update()` rebuilds resource HTML ten times per second. Cache those elements and update values when necessary if profiling shows mobile frame pressure. Do not optimize the whole renderer without measurements.
@@ -43,3 +44,10 @@ Controller UI navigation uses the existing enabled buttons/selects. Gamepad A in
 - `release/v1.3.0`: controller implementation checkpoint.
 - `release/v1.3.1`: regression tests, review and release documentation.
 - Save schema/key and world generator version are unchanged by this update.
+
+## Maintenance checkpoints
+
+- `maintenance/v1.3.2`: interrupted formatting checkpoint, preserved for history; not a recommended playable release. Its formatter damaged two nested template literals.
+- `release/v1.3.3`: corrected templates, readable core input/game/UI code, pure panel renderers and optional dependency-free Node test runner.
+- Validation: 53 automated checks pass; 36 panel-output comparisons match v1.3.1 exactly across legacy/seeded worlds and basic/fully stocked players.
+- Run `node tests/run.mjs` with Node 22+, or serve `tests/index.html` for the browser harness. Live browser and physical controller verification remain outstanding.

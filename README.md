@@ -1,4 +1,4 @@
-# Wildhollow — v1.3.1
+# Wildhollow — v1.3.3
 
 A mobile-first isometric fantasy RPG and village simulation. Vanilla JavaScript ES modules, Canvas, no dependencies or build step.
 
@@ -27,6 +27,6 @@ Full gameplay and menu bindings are implemented. Connect an Xbox-compatible stan
 
 `js/data/` holds definitions; `js/config.js` holds balance formulas. `js/world/` provides Cartesian world data. `js/systems/` handles simulation and saves. Rendering, camera, input and UI are independent modules. `js/graphics/` handles cached sprites, shared animation and cosmetic effects; `js/data/graphics.js` defines visuals. See [asset replacement](assets/README.md). Procedural generation is already implemented in `js/world/generator.js`.
 
-Run browser checks by serving the repository and opening `tests/index.html`. No test dependencies. Placeholder art; no interiors, full economy, passive perks or settlement growth yet.
+Run all 53 checks with `node tests/run.mjs` (Node 22+), or run browser checks by serving the repository and opening `tests/index.html`. No test dependencies. Placeholder art; no interiors, full economy, passive perks or settlement growth yet.
 
 See the [module guide and code review](docs/ARCHITECTURE.md) for focused editing paths and recommended next work. Previous versions are preserved on archive/release branches.

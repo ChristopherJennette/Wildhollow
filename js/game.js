@@ -1,49 +1,17 @@
-import {
-  updateAnimations
-} from './graphics/animation.js';
-import {
-  updateEffects
-} from './graphics/effects.js';
-import {
-  CONFIG,
-  distance
-} from './config.js';
-import {
-  createWorld
-} from './world/world.js';
-import {
-  Camera
-} from './camera.js';
-import {
-  Renderer
-} from './renderer.js';
-import {
-  installInput
-} from './input.js';
-import {
-  installController
-} from './input/controller.js';
-import {
-  UI
-} from './ui.js';
-import {
-  updateCombat
-} from './systems/combat.js';
-import {
-  updateNPCs
-} from './systems/npcSimulation.js';
-import {
-  explore
-} from './systems/progression.js';
-import {
-  gather,
-  pickup
-} from './systems/inventory.js';
-import {
-  loadGame,
-  saveGame,
-  resetSave
-} from './systems/save.js';
+import { updateAnimations } from './graphics/animation.js';
+import { updateEffects } from './graphics/effects.js';
+import { CONFIG, distance } from './config.js';
+import { createWorld } from './world/world.js';
+import { Camera } from './camera.js';
+import { Renderer } from './renderer.js';
+import { installInput } from './input.js';
+import { installController } from './input/controller.js';
+import { UI } from './ui.js';
+import { updateCombat } from './systems/combat.js';
+import { updateNPCs } from './systems/npcSimulation.js';
+import { explore } from './systems/progression.js';
+import { gather, pickup } from './systems/inventory.js';
+import { loadGame, saveGame, resetSave } from './systems/save.js';
 
 const canvas = document.getElementById('world'),
   camera = new Camera(canvas),

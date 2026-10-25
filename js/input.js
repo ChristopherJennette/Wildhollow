@@ -1,12 +1,6 @@
-import {
-  useSlot
-} from './systems/hotbar.js';
-import {
-  distance
-} from './config.js';
-import {
-  screenDirection
-} from './camera.js';
+import { useSlot } from './systems/hotbar.js';
+import { distance } from './config.js';
+import { screenDirection } from './camera.js';
 
 const MOVEMENT_KEYS = new Set(['KeyW', 'KeyA', 'KeyS', 'KeyD', 'ArrowUp', 'ArrowLeft', 'ArrowDown', 'ArrowRight']);
 const JOYSTICK_RADIUS = 48;
