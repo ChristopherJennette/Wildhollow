@@ -45,5 +45,27 @@ export function runPanelTests() {
     for (const npc of world.npcs) renderPanelContent('npc', world, npc.id);
     assert(JSON.stringify(world) === before, 'Renderer mutated world');
   });
+  test('Character screen includes equipped weapon and usable inventory', () => {
+    const world = createWorld({ legacy: true });
+    const { body } = renderPanelContent('character', world);
+    assert(body.includes(ITEMS[world.player.weapon].name), 'Missing current weapon');
+    assert(body.includes('data-section="inventory"'), 'Missing inventory access');
+    assert(body.includes('data-item="potion"'), 'Missing usable supplies');
+    assert(body.includes('data-item="rustySword" disabled'), 'Equipped weapon not marked');
+  });
+  test('Inventory filters distinguish supplies, weapons and crafting materials', () => {
+    const world = createWorld({ legacy: true });
+    world.player.inventory.ore = 3;
+    const render = inventoryFilter => renderPanelContent('inventory', world, undefined, { inventoryFilter }).body;
+    assert(render('weapon').includes('data-item="rustySword"') && !render('weapon').includes('data-item="potion"'), 'Weapon filter');
+    assert(render('consumable').includes('data-item="potion"') && !render('consumable').includes('data-item="rustySword"'), 'Supplies filter');
+    assert(render('material').includes(ITEMS.ore.name) && !render('material').includes('data-item="potion"'), 'Material filter');
+    world.player.inventory = {};
+    assert(render('all').includes('No items here yet'), 'Missing empty state');
+  });
+  test('Field guide works before a world has been created', () => {
+    const { body } = renderPanelContent('guide', null);
+    assert(body.includes('Xbox controller') && body.includes('Keyboard & touch'), 'Incomplete guide');
+  });
   return results;
 }

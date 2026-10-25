@@ -1,4 +1,4 @@
-# Wildhollow module guide — v1.3.3
+# Wildhollow module guide — v1.4.1
 
 Wildhollow already uses ES modules. Keep vanilla JavaScript, Canvas, relative URLs and no production dependencies or build step. The world uses Cartesian coordinates; projection belongs to the camera/renderer. Do not duplicate an entire source tree for each update: preserve immutable release branches and use narrow commits.
 
@@ -51,3 +51,16 @@ Controller UI navigation uses the existing enabled buttons/selects. Gamepad A in
 - `release/v1.3.3`: corrected templates, readable core input/game/UI code, pure panel renderers and optional dependency-free Node test runner.
 - Validation: 53 automated checks pass; 36 panel-output comparisons match v1.3.1 exactly across legacy/seeded worlds and basic/fully stocked players.
 - Run `node tests/run.mjs` with Node 22+, or serve `tests/index.html` for the browser harness. Live browser and physical controller verification remain outstanding.
+
+## v1.4 UI redesign
+
+- `css/game.css`: design tokens, HUD, journal, item cards, overlays and responsive layouts.
+- `js/ui/character-panel.js`: character portrait, actual condition/attributes/equipment and direct inventory access.
+- `js/ui/inventory-panel.js`: shared item cards, category filters and empty state; used by both Character and Inventory.
+- `js/ui/guide-panel.js`: controls/field guide, usable before a world exists.
+- `js/ui/panels.js`: section dispatch, skills, abilities, crafting and NPC services.
+- `js/ui.js`: section state, delegated events, modal isolation, keyboard shortcuts and focus restoration.
+- `release/v1.4.0`: complete redesigned interface checkpoint.
+- `release/v1.4.1`: regression coverage, browser workflow verification and documentation.
+
+Validation: 57 checks pass in Node and Chromium. Real-browser workflows cover equipment, item use, crafting, ability assignment, filters, new-game cancellation and returning to gameplay. Screens inspected at 1440×900, 390×844, 360×640 and 844×390 with no horizontal journal overflow. Physical Xbox testing remains outstanding; controller routing is exercised with simulated inputs.

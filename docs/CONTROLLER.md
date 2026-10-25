@@ -41,3 +41,7 @@ Before marking hardware support verified, test on desktop Chrome and Android Chr
 - Target selection/cycling, automatic melee, sneak, all five abilities, resource gathering and loot.
 - Unlock and reassign an ability, use/equip items, craft, buy/sell, rest and scroll long panels.
 - Save/Continue and existing-save compatibility; verify no action repeats when a button is held.
+
+## v1.4 journal
+
+While a character section is open, LB/RB moves between Character, Inventory, Crafting, Skills and Abilities. These buttons only activate hotbar abilities during gameplay. Inventory filters and all item actions use the same up/down + A navigation as other menus. Character includes direct equip/use actions. B returns to gameplay; the guide returns to the main menu.

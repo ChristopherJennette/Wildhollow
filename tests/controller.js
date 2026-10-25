@@ -42,6 +42,17 @@ export function runControllerTests() {
       t.pad.buttons[button].pressed=false;t.tick();t.press(B.MENU);t.press(button);assert(p.mana===mana,'Paused cast');
     }
   });
+  test('Controller shoulders change journal sections without casting', () => {
+    const t = setup();
+    let changed = 0;
+    t.ui.cyclePanel = direction => { changed += direction; };
+    t.press(B.UP);
+    const mana = t.world.player.mana;
+    t.press(B.RB);
+    assert(changed === 1, 'Next journal section');
+    t.press(B.LB);
+    assert(changed === 0 && t.world.player.mana === mana, 'Previous section or gameplay leakage');
+  });
   test('Controller interaction, sneak, target clearing and zoom use existing actions',()=>{
     const t=setup(),p=t.world.player;t.world.npcs=[{id:'near',x:p.x,y:p.y}];
     t.press(B.A);assert(t.world.interaction.id==='near','Interaction');
