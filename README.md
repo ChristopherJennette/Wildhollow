@@ -1,4 +1,4 @@
-# Wildhollow — v1.4.1
+# Wildhollow — v1.5.1
 
 A mobile-first isometric fantasy RPG and village simulation. Vanilla JavaScript ES modules, Canvas, no dependencies or build step.
 
@@ -18,6 +18,7 @@ Open **Character** from the portrait or bottom bar, press **C**, or use Xbox D-p
 - **Crafting**: recipes and ingredient counts; smithing still requires visiting Bram.
 - **Skills**: skill progress and attribute growth.
 - **Abilities**: unlock and assign abilities; **K** opens this section directly.
+- **Map**: open with **M** or the bottom Map button; charted roads, trails, destinations and your position. Track any landmark or town for a HUD bearing and distance.
 - **LB / RB** switches journal sections. **B / Escape** closes it. Menus pause the world.
 
 The main menu includes a Controls & Field Guide. Layouts adapt to portrait and landscape phones and desktop. Five hotbar slots stay visible in gameplay. Existing saves remain compatible.
@@ -28,7 +29,7 @@ Full gameplay and menu bindings are implemented. Connect an Xbox-compatible stan
 
 ## Implemented
 
-- Seeded 80×72 village/forest generation with shuffled building plots, connected roads, fields, clearings, resources and enemy spawns. New Game creates a fresh seed; Continue keeps the saved world. Older saves retain their original village.
+- Seeded 512×512 regions with a central village, connected roads and trails, forest, coastal beaches, two rivers, bridges, impassable mountain belts, and 16 reachable landmarks. New Game creates a fresh seed; Continue keeps the saved world. Older saves retain their original village.
 - Rats, wolves, goblins, automatic combat, ten unlockable abilities, resource recovery and respawn with temporary weariness.
 - Twelve use-based skills, derived attributes, separate character XP and ability points.
 - Gathering, nineteen items, merchant sales, ten recipes, alchemy, cooking, smithing and main-hand equipment. Use herbs for minor healing or craft remedies in Pack. Buy supplies from Mara; forge with Bram.
@@ -39,10 +40,22 @@ Full gameplay and menu bindings are implemented. Connect an Xbox-compatible stan
 
 `js/data/` holds definitions; `js/config.js` holds balance formulas. `js/world/` provides Cartesian world data. `js/systems/` handles simulation and saves. Rendering, camera, input and UI are independent modules. `js/graphics/` handles cached sprites, shared animation and cosmetic effects; `js/data/graphics.js` defines visuals. See [asset replacement](assets/README.md). Procedural generation is already implemented in `js/world/generator.js`.
 
-Run all 57 checks with `node tests/run.mjs` (Node 22+), or run browser checks by serving the repository and opening `tests/index.html`. No test dependencies. Placeholder art; no interiors, full economy, passive perks or settlement growth yet.
+Run all 61 checks with `node tests/run.mjs` (Node 22+), or run browser checks by serving the repository and opening `tests/index.html`. No test dependencies. Placeholder art; no interiors, full economy, passive perks or settlement growth yet.
 
 See the [module guide and code review](docs/ARCHITECTURE.md) for focused editing paths and recommended next work. Previous versions are preserved on archive/release branches.
 
 ## Optional browser checks
 
 `tests/browser.cjs` tests the real menu, journal, item use/equipment, crafting, ability assignments and responsive layouts. Install Playwright in a development environment, serve this repository, then run `node tests/browser.cjs`. Set `WILDHOLLOW_TEST_URL` for a non-default URL, `WILDHOLLOW_BROWSER` for a custom Chromium binary, and `WILDHOLLOW_SCREENSHOTS` to save screenshots. No production dependencies or build step are added.
+
+## Regional worlds — v1.5
+
+New journeys generate a deterministic 512 × 512 world (262,144 tiles, roughly 45 times the former map area). This is deliberately finite, bounded by seas and mountains; it is not infinite chunk streaming. The village sits in the center, with six major road destinations and ten smaller landmarks reached by forest trails. Roads route around mountain terrain and cross rivers on bridges. Coastal landings follow the generated shoreline. Ruins, shrines and camps have distinct scenery, resources and nearby encounters; they are outdoor landmarks, not enterable dungeon interiors.
+
+The Map tab shows north-up geography and numbered destinations. The HUD tracking arrow is screen-relative to match the isometric view. Discover a landmark by approaching within nine tiles; each awards 60 character XP and Survival experience once. Tracking, discoveries and explored areas survive saves. Roads/trails are traversable, but travel is not guaranteed enemy-free.
+
+**Existing saves keep their exact original geography and progress.** Continue will not regenerate an old village. To explore the expanded regions, choose New Journey and confirm replacement of the active save. Generator 1 and the original fixed village remain supported. Old code releases are preserved separately on release branches.
+
+Generation, routing, discovery, atlas rendering and scenery indexing are separate modules. Static geography is reconstructed from its seed rather than stored in localStorage. The renderer indexes scenery in 16-tile cells, drawing only candidates near the camera.
+
+Optional `node tests/browser-regions.cjs` uses the same Playwright/environment settings as `tests/browser.cjs`, checks the atlas and tracking UI, renders coast/ruins/bridge scenes, and reports a local draw-time sample. It does not measure phone performance or a physical controller.

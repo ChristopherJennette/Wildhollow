@@ -45,3 +45,7 @@ Before marking hardware support verified, test on desktop Chrome and Android Chr
 ## v1.4 journal
 
 While a character section is open, LB/RB moves between Character, Inventory, Crafting, Skills and Abilities. These buttons only activate hotbar abilities during gameplay. Inventory filters and all item actions use the same up/down + A navigation as other menus. Character includes direct equip/use actions. B returns to gameplay; the guide returns to the main menu.
+
+## Regional map
+
+Open the character journal with D-pad Up, then use LB/RB to reach Map. Use up/down to select a Track button and A to follow that destination. B returns to the world; a screen-relative direction arrow and distance appear below the location label. Track Wildhollow to return to town. Right stick scrolls the destination list. Keyboard M and the bottom Map button provide the same access.

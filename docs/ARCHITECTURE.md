@@ -1,4 +1,4 @@
-# Wildhollow module guide — v1.4.1
+# Wildhollow module guide — v1.5.1
 
 Wildhollow already uses ES modules. Keep vanilla JavaScript, Canvas, relative URLs and no production dependencies or build step. The world uses Cartesian coordinates; projection belongs to the camera/renderer. Do not duplicate an entire source tree for each update: preserve immutable release branches and use narrow commits.
 
@@ -64,3 +64,22 @@ Controller UI navigation uses the existing enabled buttons/selects. Gamepad A in
 - `release/v1.4.1`: regression coverage, browser workflow verification and documentation.
 
 Validation: 57 checks pass in Node and Chromium. Real-browser workflows cover equipment, item use, crafting, ability assignment, filters, new-game cancellation and returning to gameplay. Screens inspected at 1440×900, 390×844, 360×640 and 844×390 with no horizontal journal overflow. Physical Xbox testing remains outstanding; controller routing is exercised with simulated inputs.
+
+## Regional generation and compatibility
+
+| Concern | Module |
+| --- | --- |
+| Version selection and supported generator API | `js/world/generator.js` |
+| Frozen generator-one implementation for saved towns | `js/world/generator-v1.js` |
+| Seeded geography, town embedding, POIs, forest placement | `js/world/regions.js` |
+| Weighted road routing and river-only bridge construction | `js/world/region-routes.js` |
+| Discovery rewards, region names, screen-relative destination bearings | `js/world/exploration.js` |
+| Cached SVG terrain, roads and destination list | `js/ui/atlas-panel.js` |
+| Cached mountain/landmark sprite art | `js/graphics/region-art.js` |
+| Static scenery viewport buckets | `js/graphics/spatial-index.js` |
+| Compatibility, connectivity, discovery and cap checks | `tests/regions.js` |
+| Real-browser regional scenes and atlas navigation | `tests/browser-regions.cjs` |
+
+The generator version in a save is authoritative. Never modify generator-v1.js or silently regenerate old saves with newer geography. Future terrain changes require a new generator version and continued support for existing versions. Regional metadata, terrain and scenery are deterministic; only mutable player, NPC, resource, enemy and discovery state is saved. The 512-tile cap is intentional. Infinite streaming would additionally need chunk ownership, persistence of unloaded actors/resources, cross-chunk routing and rendering changes.
+
+`release/v1.5.0` preserves the complete regional generation checkpoint. `release/v1.5.1` includes browser regression coverage and documentation. All prior releases remain intact.
