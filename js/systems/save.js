@@ -1,5 +1,5 @@
 import { normalizeHotbar } from './hotbar.js';
-import { GENERATOR_VERSION } from '../world/generator.js';
+import { SUPPORTED_GENERATORS } from '../world/generator.js';
 import { CONFIG, clamp } from '../config.js';
 import { SKILLS, ABILITIES, ITEMS } from '../data/definitions.js';
 import { createWorld } from '../world/world.js';
@@ -7,9 +7,10 @@ import { refreshAttributes, maxima } from './progression.js';
 import { walkable } from './movement.js';
 
 const finite=(n,fallback,min=0,max=1e9)=>Number.isFinite(n)?clamp(n,min,max):fallback;
-export function saveGame(world,storage=localStorage) {
+export function saveGame(world,storage) {
   try {
-    const fields=['x','y','level','xp','points','skills','attributes','inventory','weapon','gold','abilities','hotbar','cooldowns','explored','stealthEncounters','health','stamina','mana','penalty','recoverableHealth'];
+    storage ??= globalThis.localStorage;
+    const fields=['x','y','level','xp','points','skills','attributes','inventory','weapon','gold','abilities','hotbar','cooldowns','explored','stealthEncounters','discovered','trackedPoi','health','stamina','mana','penalty','recoverableHealth'];
     const player=Object.fromEntries(fields.map(key=>[key,world.player[key]]));
     const map=world.map.seed===undefined?{kind:'legacy'}:{kind:'procedural',seed:world.map.seed,generatorVersion:world.map.generatorVersion};
     const data={version:CONFIG.saveVersion,map,player,time:world.time,elapsed:world.elapsed,
@@ -19,18 +20,19 @@ export function saveGame(world,storage=localStorage) {
     storage.setItem(CONFIG.saveKey,JSON.stringify(data));return {ok:true};
   } catch {return {ok:false,error:'Saving unavailable. Check browser storage settings or free space.'};}
 }
-export function loadGame(storage=localStorage) {
+export function loadGame(storage) {
   try {
+    storage ??= globalThis.localStorage;
     const raw=storage.getItem(CONFIG.saveKey);
     if(!raw) return {world:null};
     const data=JSON.parse(raw);
     if(data.version!==1 && data.version!==CONFIG.saveVersion) return {world:null,error:'This save version is not supported. Existing data has been preserved.'};
     if(!data.player || !data.player.skills || !data.player.inventory) throw new Error('Invalid save');
     const legacy=data.version===1 || data.map?.kind==='legacy';
-    if(!legacy && (data.map?.kind!=='procedural' || data.map.generatorVersion!==GENERATOR_VERSION || !Number.isInteger(data.map.seed) || data.map.seed<0 || data.map.seed>0xffffffff)) {
+    if(!legacy && (data.map?.kind!=='procedural' || !SUPPORTED_GENERATORS.includes(data.map.generatorVersion) || !Number.isInteger(data.map.seed) || data.map.seed<0 || data.map.seed>0xffffffff)) {
       return {world:null,error:'Unsupported world generation version. Existing save preserved.'};
     }
-    const world=createWorld(legacy?{legacy:true}:{seed:data.map.seed}),p=world.player,s=data.player;
+    const world=createWorld(legacy?{legacy:true}:{seed:data.map.seed,generatorVersion:data.map.generatorVersion}),p=world.player,s=data.player;
     world.time=finite(data.time,world.time);world.elapsed=finite(data.elapsed,0);
     for(const id of Object.keys(SKILLS)) {
       p.skills[id]={level:Math.floor(finite(s.skills[id]?.level,1,1,100)),xp:finite(s.skills[id]?.xp,0,0,1e6)};
@@ -46,7 +48,9 @@ export function loadGame(storage=localStorage) {
     p.abilities=Array.isArray(s.abilities)?[...new Set(s.abilities.filter(id=>ABILITIES[id]))]:[];
     normalizeHotbar(p,Array.isArray(s.hotbar)?s.hotbar:p.abilities);
     p.cooldowns={};for(const id of p.abilities) p.cooldowns[id]=finite(s.cooldowns?.[id],0,0,ABILITIES[id].cooldown);
-    p.explored=Array.isArray(s.explored)?s.explored.filter(v=>typeof v==='string').slice(0,200):[];
+    p.explored=Array.isArray(s.explored)?s.explored.filter(v=>typeof v==='string').slice(0,4096):[];
+    p.discovered=Array.isArray(s.discovered)?[...new Set(s.discovered.filter(id=>world.map.landmarks?.some(point=>point.id===id)))]:[];
+    p.trackedPoi=s.trackedPoi==='wildhollow'||world.map.landmarks?.some(point=>point.id===s.trackedPoi)?s.trackedPoi:null;
     p.stealthEncounters=Array.isArray(s.stealthEncounters)?s.stealthEncounters.filter(v=>typeof v==='string').slice(-200):[];
     for(const npc of world.npcs) {
       const saved=data.npcs?.find(n=>n.id===npc.id);
@@ -64,6 +68,6 @@ export function loadGame(storage=localStorage) {
     return {world};
   } catch {return {world:null,error:'The save could not be read. Reset Progress can clear it.'};}
 }
-export function resetSave(storage=localStorage) {
-  try {storage.removeItem(CONFIG.saveKey);return true;} catch {return false;}
+export function resetSave(storage) {
+  try {storage ??= globalThis.localStorage;storage.removeItem(CONFIG.saveKey);return true;} catch {return false;}
 }

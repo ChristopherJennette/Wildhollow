@@ -1,3 +1,4 @@
+import { discoverLandmarks } from './world/exploration.js';
 import { updateAnimations } from './graphics/animation.js';
 import { updateEffects } from './graphics/effects.js';
 import { CONFIG, distance } from './config.js';
@@ -65,6 +66,8 @@ const ui = new UI(() => world, {
 });
 ui.menu(true, !!stored.world, stored.error);
 const preview = createWorld();
+camera.x = preview.player.x;
+camera.y = preview.player.y;
 renderer.draw(preview);
 
 function start(next) {
@@ -131,6 +134,7 @@ function frame(timestamp) {
       world.elapsed += CONFIG.tick;
       updateCombat(world, CONFIG.tick, ui.notify);
       explore(world, ui.notify);
+      discoverLandmarks(world, ui.notify);
       npcTimer += CONFIG.tick;
       if (npcTimer >= CONFIG.npcInterval) {
         updateNPCs(world, npcTimer);

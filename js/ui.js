@@ -1,3 +1,4 @@
+import { regionName, navigationHint } from './world/exploration.js';
 import { renderPanelContent } from './ui/panels.js';
 import { VERSION } from './version.js';
 import { HOTBAR_SIZE, assignSlot, useSlot } from './systems/hotbar.js';
@@ -58,6 +59,14 @@ export class UI {
     $('panel-body').onclick = event => {
       const button = event.target.closest('button');
       if (!button) return;
+      if (button.dataset.trackPoi !== undefined) {
+        getWorld().player.trackedPoi = button.dataset.trackPoi || null;
+        this.renderPanel();
+        $('panel-body').querySelector(`[data-track-poi="${button.dataset.trackPoi}"]`)?.focus();
+        this.update();
+        actions.save();
+        return;
+      }
       if (button.dataset.section) {
         this.openPanel(button.dataset.section);
         return;
@@ -104,7 +113,7 @@ export class UI {
         else if (getWorld()) actions.menu();
       }
       const editing = event.target.closest?.('input, textarea, select, [contenteditable="true"]');
-      const shortcut = { KeyC: 'character', KeyI: 'inventory', KeyK: 'abilities' }[event.code];
+      const shortcut = { KeyC: 'character', KeyI: 'inventory', KeyK: 'abilities', KeyM: 'map' }[event.code];
       if (shortcut && !editing && !event.ctrlKey && !event.altKey && !event.metaKey && getWorld() && $('menu').hidden) {
         event.preventDefault();
         if (!event.repeat) this.openPanel(shortcut);
@@ -135,7 +144,7 @@ export class UI {
     else $('panel-tabs').querySelector('[aria-current="page"]')?.focus({ preventScroll: true });
   }
   cyclePanel(direction) {
-    const sections = ['character', 'inventory', 'crafting', 'skills', 'abilities'];
+    const sections = ['character', 'inventory', 'crafting', 'skills', 'abilities', 'map'];
     const index = sections.indexOf(this.panel);
     if (index < 0) return;
     this.openPanel(sections[(index + direction + sections.length) % sections.length]);
@@ -231,13 +240,8 @@ export class UI {
     const enemy = target(world);
     $('target').textContent = enemy ? `${ENEMIES[enemy.kind].name} · ${Math.ceil(enemy.health)} HP${p.sneaking?' · Sneaking':''}` : p.sneaking ? 'Sneaking · Automatic attacks paused' : '';
     $('sneak').setAttribute('aria-pressed', String(p.sneaking));
-    const bounds = world.map.settlement.bounds || {
-      left: 21,
-      right: 53,
-      top: 25,
-      bottom: 51
-    };
-    $('location').textContent = p.penalty > 0 ? `Weary ${Math.ceil(p.penalty)}s` : p.x > bounds.left && p.x < bounds.right && p.y > bounds.top && p.y < bounds.bottom ? 'Wildhollow village' : 'The wilds';
+    $('location').textContent = p.penalty > 0 ? `Weary ${Math.ceil(p.penalty)}s` : regionName(world.map,p);
+    $('navigation').textContent = navigationHint(world);
     for (const button of $('hotbar').children) {
       const slot = Number(button.dataset.slot),
         id = p.hotbar[slot],

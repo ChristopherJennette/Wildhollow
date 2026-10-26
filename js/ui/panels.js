@@ -1,3 +1,4 @@
+import { renderAtlas } from './atlas-panel.js';
 import { renderCharacter } from './character-panel.js';
 import { renderInventory } from './inventory-panel.js';
 import { renderGuide } from './guide-panel.js';
@@ -12,6 +13,7 @@ const row = (title, detail, right = '') => `<div class="row"><div>${title}<small
 
 const renderers = {
   character: renderCharacter,
+  map: renderAtlas,
   skills: renderSkills,
   abilities: renderAbilities,
   inventory: renderInventory,

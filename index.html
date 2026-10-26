@@ -14,24 +14,24 @@
     <div class="hud-identity"><button data-panel="character" class="avatar-button" aria-label="Open character and inventory">W</button><div><span class="eyebrow">THE WANDERER</span><div class="level-line"><span id="level"></span><progress id="xp" aria-label="Character experience" max="100"></progress></div></div><button id="menu-button" class="icon-button" aria-label="Pause and open menu">Ⅱ</button></div>
     <div id="resources"></div>
     <div class="world-info"><span id="location"></span><span id="clock"></span></div>
-    <div id="target"></div>
+    <div id="target"></div><div id="navigation" aria-live="polite"></div>
   </header>
   <div id="notice" role="status" aria-live="polite"></div>
   <footer id="controls" hidden>
     <div class="utility"><button id="sneak" aria-pressed="false">Sneak <small>LS</small></button><span class="control-caption">YOUR ACTIVE ABILITIES</span><div class="zoom-controls"><button id="zoom-out" aria-label="Zoom out">−</button><button id="zoom-in" aria-label="Zoom in">+</button></div></div>
     <div id="hotbar" aria-label="Ability hotbar"></div>
-    <nav class="game-nav" aria-label="Character shortcuts"><button data-panel="character">Character <kbd>C</kbd></button><button data-panel="inventory">Inventory <kbd>I</kbd></button><button data-panel="abilities">Abilities <kbd>K</kbd></button></nav>
+    <nav class="game-nav" aria-label="Character shortcuts"><button data-panel="character">Character <kbd>C</kbd></button><button data-panel="inventory">Inventory <kbd>I</kbd></button><button data-panel="map">Map <kbd>M</kbd></button></nav>
   </footer>
   <section id="menu" class="overlay menu-overlay" aria-label="Game menu">
     <div class="card intro">
       <div class="menu-story"><span class="eyebrow">A VILLAGE AT THE EDGE OF THE WILD</span><div class="crest" aria-hidden="true">✧</div><h1>Wildhollow</h1><p class="menu-subtitle">A quiet village.<br>A world waiting beyond.</p><span class="story-rule"></span><p class="muted">Gather. Grow. Find your own way.</p></div>
-      <div class="menu-actions"><span class="eyebrow">YOUR JOURNEY</span><button id="continue" class="primary">Continue journey <span aria-hidden="true">→</span></button><button id="new-game">Begin a new journey</button><button id="help-button">Controls & field guide</button><div class="menu-bottom"><small id="save-status">Version 1.4.1 · Local saves</small><button id="reset" class="text-button danger">Reset progress</button></div></div>
+      <div class="menu-actions"><span class="eyebrow">YOUR JOURNEY</span><button id="continue" class="primary">Continue journey <span aria-hidden="true">→</span></button><button id="new-game">Begin a new journey</button><button id="help-button">Controls & field guide</button><div class="menu-bottom"><small id="save-status">Version 1.5.0 · Local saves</small><button id="reset" class="text-button danger">Reset progress</button></div></div>
     </div>
   </section>
   <section id="panel" class="overlay" hidden role="dialog" aria-modal="true" aria-labelledby="panel-title">
     <div class="card character-shell">
       <div class="panel-heading"><div><span id="panel-kicker" class="eyebrow">THE WANDERER’S JOURNAL</span><h2 id="panel-title">Character</h2></div><button id="close-panel" class="icon-button" aria-label="Close panel">✕</button></div>
-      <nav id="panel-tabs" class="panel-tabs" aria-label="Journal sections"><button data-section="character">Character</button><button data-section="inventory">Inventory</button><button data-section="crafting">Crafting</button><button data-section="skills">Skills</button><button data-section="abilities">Abilities</button></nav>
+      <nav id="panel-tabs" class="panel-tabs" aria-label="Journal sections"><button data-section="character">Character</button><button data-section="inventory">Inventory</button><button data-section="crafting">Crafting</button><button data-section="skills">Skills</button><button data-section="abilities">Abilities</button><button data-section="map">Map</button></nav>
       <div id="panel-body"></div>
       <div class="panel-footer"><span>World paused · Take your time</span><span class="keyboard-hint">Esc to return</span><span class="pad-label">LB / RB sections · A select · B return</span></div>
     </div>

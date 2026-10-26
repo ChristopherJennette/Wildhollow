@@ -80,7 +80,7 @@ progress { width: 100%; height: 5px; accent-color: var(--gold); border: 0; }
 .overlay { position: fixed; inset: 0; z-index: 3; display: flex; align-items: center; justify-content: center; padding: max(20px,env(safe-area-inset-top)) max(20px,env(safe-area-inset-right)) max(20px,env(safe-area-inset-bottom)) max(20px,env(safe-area-inset-left)); background: #081512c7; backdrop-filter: blur(7px); }
 .card { width: min(980px,100%); max-height: calc(100dvh - 40px); overflow: auto; overscroll-behavior: contain; background: var(--surface); border: 1px solid #5a6b56; border-radius: 16px; box-shadow: 0 28px 100px #0008; }
 .panel-heading { display: flex; justify-content: space-between; align-items: center; padding: 24px 28px 20px; gap: 12px; }
-.panel-tabs { position: sticky; top: 0; z-index: 1; display: grid; grid-template-columns: repeat(5,minmax(0,1fr)); gap: 3px; padding: 8px 22px; background: #182827fa; border-block: 1px solid var(--border); }
+.panel-tabs { position: sticky; top: 0; z-index: 1; display: grid; grid-template-columns: repeat(6,minmax(0,1fr)); gap: 3px; padding: 8px 22px; background: #182827fa; border-block: 1px solid var(--border); }
 .panel-tabs button { min-width: 0; border-color: transparent; background: transparent; padding: 10px 4px; color: var(--muted); }
 .panel-tabs button[aria-current=page] { color: var(--gold); background: #2a3b31; border-color: #6b7453; }
 #panel-body { padding: 26px 28px; }
@@ -201,3 +201,12 @@ progress { width: 100%; height: 5px; accent-color: var(--gold); border: 0; }
   .menu-bottom { margin-top: 5px; padding-top: 6px; }
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; scroll-behavior: auto !important; } }
+
+/* Region atlas: same journal navigation, compact geography with a destination list. */
+.atlas-layout { display:grid; grid-template-columns:minmax(0,1.15fr) minmax(0,1fr); gap:24px; }
+.world-atlas { display:block; width:100%; height:auto; border:1px solid var(--border); border-radius:10px; background:#203f40; }
+.atlas-legend { color:var(--muted); font-size:11px; line-height:1.8; margin-top:12px; }
+#navigation { font-size:11px; color:var(--gold); margin-top:6px; }
+#navigation:empty { display:none; }
+[data-track-poi][aria-pressed=true] { border-color:var(--gold); color:var(--gold); }
+@media(max-width:640px) { .atlas-layout { grid-template-columns:1fr; } .panel-tabs button { font-size:10px; padding-inline:2px; } }

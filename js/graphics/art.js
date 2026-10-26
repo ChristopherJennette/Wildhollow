@@ -1,3 +1,4 @@
+import { paintRegionObject } from './region-art.js';
 // Original, deterministic sprite art. Painted once into cached atlases, never per frame.
 export function polygon(c, points, color, stroke) {
   c.beginPath(); points.forEach((p,i) => i ? c.lineTo(p.x,p.y) : c.moveTo(p.x,p.y)); c.closePath();
@@ -105,6 +106,7 @@ export function paintActor(c,shape,color,state,frame,direction) {
 }
 
 export function paintObject(c,shape,variant=0) {
+  if (paintRegionObject(c, shape)) return;
   const rng=random(811+variant*721);
   if(shape==='berry'){
     paintObject(c,'bush',variant);for(const [x,y] of [[-7,-8],[5,-6],[0,-11],[8,-10]])ellipse(c,x,y,2,2,'#a26364');
@@ -174,6 +176,11 @@ export function paintTerrain(c,definition,variant) {
       if(i%11===0)line(c,x,y,x-1,y-2,shade(base,17));
     }else if(material==='water')line(c,x,y,x+4+rng()*6,y,shade(base,i%2?7:-6));
     else {rect(c,x,y,1+rng()*2,1,shade(base,i%3===0?16:-12));}
+  }
+  if (material === 'bridge') {
+    for (let i=0;i<7;i++) line(c, i*10-15, 0, i*10+45, h, '#564d38', 2);
+    line(c,0,h/2,w/2,h,'#d0b27c',3);
+    line(c,w/2,0,w,h/2,'#d0b27c',3);
   }
   if(definition.furrows){
     for(let i=0;i<3;i++){

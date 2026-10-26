@@ -4,12 +4,12 @@ import { ENEMIES, NPCS, SKILLS } from '../data/definitions.js';
 import { CONFIG, distance } from '../config.js';
 import { refreshAttributes, maxima } from '../systems/progression.js';
 
-export function createWorld({seed,legacy=false} = {}) {
-  const map = legacy ? createMap() : generateMap(seed);
+export function createWorld({seed,legacy=false,generatorVersion} = {}) {
+  const map = legacy ? createMap() : generateMap(seed,generatorVersion);
   const player = { id: 'player', ...map.spawn, radius: 0.25, level: 1, xp: 0, points: 1,
     skills: Object.fromEntries(Object.keys(SKILLS).map(id => [id, { level: 1, xp: 0 }])),
     attributes: {}, inventory: { rustySword: 1, potion: 2 }, weapon: 'rustySword', gold: 8,
-    abilities: [], hotbar: Array(5).fill(null), cooldowns: {}, explored: [], stealthEncounters: [],
+    abilities: [], hotbar: Array(5).fill(null), cooldowns: {}, explored: [], discovered: [], trackedPoi: null, stealthEncounters: [],
     targetId: null, destination: null, path: [], sneaking: false, attackTimer: 0,
     penalty: 0, recoverableHealth: 0, facing: { x: 0, y: 1 } };
   refreshAttributes(player);
@@ -22,7 +22,7 @@ export function createWorld({seed,legacy=false} = {}) {
       return { ...def, x: home.door.x, y: home.door.y, radius: 0.23, state: 'home', path: [], destination: null }; }),
   };
   // Static occupancy is shared by pathfinding, line of sight, and collision checks.
-  world.blocked = Array.from({ length: map.height }, (_, y) => map.terrain[y].map(t => t === 'water'));
+  world.blocked = Array.from({ length: map.height }, (_, y) => map.terrain[y].map(t => t === 'water' || t === 'mountain'));
   for (const b of map.buildings) for (let y=b.y; y<b.y+b.collisionFootprint.h; y++) for(let x=b.x;x<b.x+b.collisionFootprint.w;x++) world.blocked[y][x]=true;
   for (const t of map.trees) world.blocked[Math.floor(t.y)][Math.floor(t.x)] = true;
   return world;

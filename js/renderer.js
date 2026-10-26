@@ -1,3 +1,4 @@
+import { SceneryIndex } from './graphics/spatial-index.js';
 import { ENEMIES } from './data/definitions.js';
 import { SPRITES, TERRAIN, WORLD_OBJECTS, RESOURCE_SPRITES, BUILDINGS, EFFECTS } from './data/graphics.js';
 import { SpriteManager, buildingSprite, entitySprite } from './graphics/sprites.js';
@@ -30,6 +31,7 @@ export class Renderer {
   prepare(world) {
     this.world = world; this.staticEntries.length = 0; this.actors.length = 0; this.records = new WeakMap(); this.order = 0;
     for (const entity of world.map.trees) this.staticEntries.push(this.record(entity,'object',WORLD_OBJECTS[entity.type || 'tree'].sprite));
+    for (const entity of world.map.decorations || []) this.staticEntries.push(this.record(entity, 'object', WORLD_OBJECTS[entity.type].sprite));
     for (const entity of world.map.buildings) {
       const entry = this.record(entity,'building'); entry.layers = {};
       for (const layer of ['floor','walls','roof']) {
@@ -40,6 +42,7 @@ export class Renderer {
       this.staticEntries.push(entry);
     }
     for (const entity of world.map.resources) this.staticEntries.push(this.record(entity,'resource',RESOURCE_SPRITES[entity.kind]));
+    this.sceneryIndex = new SceneryIndex(this.staticEntries);
     this.actors.push(this.record(world.player,'player',entitySprite(world.player)));
     for (const entity of world.npcs) this.actors.push(this.record(entity,'npc',entitySprite(entity)));
     for (const entity of world.enemies) this.actors.push(this.record(entity,'enemy',entitySprite(entity)));
@@ -97,7 +100,7 @@ export class Renderer {
     c.clearRect(0,0,cam.width,cam.height);c.fillStyle='#34565d';c.fillRect(0,0,cam.width,cam.height);
     this.terrain(world);this.queue.length=0;
     const player=this.position(this.records.get(world.player));
-    for(const entry of this.staticEntries) {
+    for(const entry of this.sceneryIndex.query(cam)) {
       if(entry.type==='resource' && entry.e.readyAt>world.elapsed)continue;
       this.position(entry);if(!this.visible(entry))continue;
       if(entry.layers)this.assets.draw(c,entry.layers.floor,entry.x,entry.y,z);
@@ -123,6 +126,11 @@ export class Renderer {
     // Keep the player locatable even if a replacement has opaque overhanging pixels.
     if(this.queue.some(entry=>entry!==player && (entry.layers || entry.type==='object') && this.occludes(entry,player))){
       c.strokeStyle='#e1dfb7';c.lineWidth=1.5;c.beginPath();c.ellipse(player.x,player.y-24*z,8*z,22*z,0,0,Math.PI*2);c.stroke();
+    }
+    for (const landmark of world.map.landmarks || []) {
+      if (distance(landmark,world.player) > 18) continue;
+      const point=cam.project(landmark.x,landmark.y-2,72);
+      this.label(landmark.name,point.x,point.y,'#e3cea1',12);
     }
     this.effects(world);
     const h=hour(world);if(h<6 || h>20){c.fillStyle='#18234244';c.fillRect(0,0,cam.width,cam.height);}

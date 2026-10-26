@@ -32,6 +32,15 @@ export const SPRITES = {
   grass: tile(['#697456', '#687355', '#6b7558', '#677153'], 'grass'),
   dirt: tile(['#8d8165', '#8b7e62'], 'dirt'), road: tile(['#a09679', '#9e9477', '#a2987b', '#9f9578'], 'road'),
   water: tile(['#4c6260'], 'water'), field: { ...tile(['#746e4e', '#797254'], 'field'), furrows: true },
+  mountain: object('mountain', 152, 180, 76, 150),
+  ruin: object('ruin', 72, 80, 36, 60),
+  standingStone: object('standingStone', 42, 90, 21, 73),
+  tent: object('tent', 100, 88, 50, 60),
+  forest: tile(['#52664b','#576b4f'], 'grass'),
+  sand: tile(['#b5a782','#b0a17c'], 'sand'),
+  mountainGround: tile(['#71786c','#6b756b'], 'rock'),
+  trail: tile(['#897c5f','#84795a'], 'dirt'),
+  bridge: tile(['#9e855c','#a58a63'], 'bridge'),
   tree: object('tree', 72, 120, 36, 106), rock: object('rock', 32, 28, 16, 23),
   bush: object('bush', 32, 28, 16, 23),
   berry: object('berry',32,28,16,23), mushroom: object('mushroom',32,28,16,23), wood: object('wood',40,28,20,23), fence: object('fence', 76, 64, 38, 40),
@@ -40,10 +49,12 @@ export const SPRITES = {
   hit: object('hit', 40, 40, 20, 20), heal: object('heal', 48, 48, 24, 24),
 };
 export const TERRAIN = {
+  forest: { sprite: 'forest' }, sand: { sprite: 'sand' }, mountain: { sprite: 'mountainGround' }, trail: { sprite: 'trail' }, bridge: { sprite: 'bridge' },
   grass: { sprite: 'grass' }, dirt: { sprite: 'dirt' }, road: { sprite: 'road' },
   water: { sprite: 'water' }, field: { sprite: 'field' },
 };
 export const WORLD_OBJECTS = {
+  mountain: { sprite: 'mountain' }, ruin: { sprite: 'ruin' }, standingStone: { sprite: 'standingStone' }, tent: { sprite: 'tent' },
   tree: { sprite: 'tree', collision: { radius: 0.45, blocksTile: true } },
   rock: { sprite: 'rock', collision: { radius: 0.4, blocksTile: true } },
   fence: { sprite: 'fence', collision: { radius: 0.25, blocksTile: true } },
