@@ -125,7 +125,7 @@ function updateContextAction() {
     : candidate.type === 'drop' ? 'Pick up loot'
     : entity.kind === 'ore' ? 'Mine ore' : entity.kind === 'wood' ? 'Gather wood' : 'Gather';
 }
-const input = installInput(canvas, camera, () => world, () => world && !menuOpen && !ui.panel, ui.notify);
+const input = installInput(canvas, camera, () => world, () => world && !menuOpen && !ui.panel, ui.notify, globalThis, () => contextAction.onclick());
 const controller = installController({
   getWorld: () => world,
   isPlaying: () => world && !menuOpen && !ui.panel,

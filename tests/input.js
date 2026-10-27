@@ -21,10 +21,10 @@ export function runInputTests() {
     const canvas = new Surface(), document = new Surface(), window = new Surface();
     const joystick = new Surface(), knob = new Surface(), world = createWorld({legacy:true});
     document.getElementById = id => id === 'joystick' ? joystick : knob;
-    let playing = true, zoom = 1;
+    let playing = true, zoom = 1, actions = 0;
     const input = installInput(canvas, { project: (x,y) => ({x:x*10,y:y*10}), scale: n => { zoom *= n; } },
-      () => world, () => playing, () => {}, { document, window });
-    return { canvas, document, window, joystick, world, input, pause: () => { playing = false; }, zoom: () => zoom };
+      () => world, () => playing, () => {}, { document, window }, () => { actions++; });
+    return { canvas, document, window, joystick, world, input, pause: () => { playing = false; }, zoom: () => zoom, actions: () => actions };
   }
   const touch = (pointerId, x, y) => ({ pointerId, clientX:x, clientY:y, pointerType:'touch', button:0 });
   test('Keyboard supports WASD/arrows and clears on release, blur and pause', () => {
@@ -63,6 +63,22 @@ export function runInputTests() {
     t.canvas.emit('pointerup',touch(1,100,300));t.canvas.emit('pointerup',touch(2,250,300));assert(!p.targetId,'Pinch selected target');
     t.canvas.emit('pointerdown',touch(3,100,500));t.canvas.emit('pointermove',touch(3,148,500));t.input.update();
     t.document.hidden=true;t.document.emit('visibilitychange');assert(t.joystick.hidden&&p.moveInput.x===0,'Background touch stuck');
+  });
+  test('Empty single touch taps invoke context; drag, pinch, mouse and targeting do not', () => {
+    const t=setup(), e=t.world.enemies[0];
+    t.canvas.emit('pointerdown',touch(1,0,0));t.canvas.emit('pointerup',touch(1,0,0));
+    assert(t.actions()===1,'Ground tap did not activate context');
+    t.canvas.emit('pointerdown',touch(2,100,500));t.canvas.emit('pointermove',touch(2,148,500));
+    t.canvas.emit('pointerdown',touch(3,0,0));t.canvas.emit('pointerup',touch(3,0,0));
+    t.canvas.emit('pointerup',touch(2,148,500));assert(t.actions()===1,'Drag or second finger activated context');
+    t.canvas.emit('pointerdown',touch(4,100,300));t.canvas.emit('pointerdown',touch(5,200,300));
+    t.canvas.emit('pointerup',touch(4,100,300));t.canvas.emit('pointerup',touch(5,200,300));
+    const mouse={pointerId:6,clientX:0,clientY:0,pointerType:'mouse',button:0};
+    t.canvas.emit('pointerdown',mouse);t.canvas.emit('pointerup',mouse);
+    t.canvas.emit('pointerdown',touch(7,e.x*10,e.y*10));t.canvas.emit('pointerup',touch(7,e.x*10,e.y*10));
+    assert(t.actions()===1&&t.world.player.targetId===e.id,'Pinch, mouse or target activated context');
+    t.pause();t.canvas.emit('pointerdown',touch(8,0,0));t.canvas.emit('pointerup',touch(8,0,0));
+    assert(t.actions()===1,'Paused tap activated context');
   });
   test('Number keys and numpad trigger assigned slots once and respect pause/focus',()=>{
     const t=setup(),p=t.world.player,e=t.world.enemies[0];e.x=35;e.y=37;p.x=35;p.y=36;unlock(p,'spark');assignSlot(p,'spark',4);

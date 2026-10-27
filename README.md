@@ -1,4 +1,4 @@
-# Wildhollow — v1.6.0
+# Wildhollow — v1.6.1
 
 A mobile-first isometric fantasy RPG and village simulation. Vanilla JavaScript ES modules, Canvas, no dependencies or build step.
 
@@ -66,4 +66,4 @@ Stand near a tree and use the context button or Xbox A to chop it. A woodcutter 
 
 Resource nodes and defeated enemies roll multiple independent drops, including uncommon crafting materials and occasional equipment. Drops from enemies remain on the ground to pick up. Craft basic tools and supplies in the journal; Bram offers iron tools, steel and upgraded weapons. Materials such as planks, cured leather, resin and crystals provide a foundation for further crafting.
 
-The nearby action button offers a relevant action for the closest person, loot, node or tree. Xbox A uses the same interaction selection.
+A single tap on empty world space also activates the nearby action; tapping an enemy or object still selects it, while dragging moves. The nearby action button offers a relevant action for the closest person, loot, node or tree. Xbox A uses the same interaction selection.

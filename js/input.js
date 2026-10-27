@@ -5,7 +5,7 @@ import { screenDirection } from './camera.js';
 const MOVEMENT_KEYS = new Set(['KeyW', 'KeyA', 'KeyS', 'KeyD', 'ArrowUp', 'ArrowLeft', 'ArrowDown', 'ArrowRight']);
 const JOYSTICK_RADIUS = 48;
 
-export function installInput(canvas, camera, getWorld, isPlaying, notify, platform = globalThis) {
+export function installInput(canvas, camera, getWorld, isPlaying, notify, platform = globalThis, activateContext = () => {}) {
   const {
     document,
     window
@@ -139,7 +139,12 @@ export function installInput(canvas, camera, getWorld, isPlaying, notify, platfo
 
   function release(event, cancelled = false) {
     const point = pointers.get(event.pointerId);
-    if (!cancelled && point && !point.dragged && !pinching && isPlaying()) select(event.clientX, event.clientY);
+    if (!cancelled && point && !point.dragged && !pinching && isPlaying()) {
+      const selected = select(event.clientX, event.clientY);
+      // An empty one-finger tap uses the same nearby action as the HUD button.
+      // Object/enemy taps and the second targeting finger keep their original behavior.
+      if (point.touch && !selected && pointers.size === 1 && stickId === null) activateContext();
+    }
     pointers.delete(event.pointerId);
     if (event.pointerId === stickId) {
       stickId = null;
@@ -204,6 +209,7 @@ export function installInput(canvas, camera, getWorld, isPlaying, notify, platfo
       };
       if (distance(player, chosen.e) > 1.6) notify('Move closer to interact.');
     }
+    return !!chosen;
   }
   return {
     update,
