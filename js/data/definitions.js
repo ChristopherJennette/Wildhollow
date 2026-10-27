@@ -31,6 +31,19 @@ export const ENEMIES = {
   goblin: { name: 'Goblin', health: 110, damage: 13, speed: 2.65, range: 1.2, interval: 1.3, aggro: 4.5, xp: 75, color: '#9fa65c', loot: 'ore' },
 };
 export const ITEMS = {
+  woodaxe: {name:'Woodcutter axe',type:'tool',tool:'axe',tier:1,value:8},
+  pickaxe: {name:'Mining pick',type:'tool',tool:'pick',tier:1,value:8},
+  ironAxe: {name:'Iron woodaxe',type:'tool',tool:'axe',tier:2,value:24},
+  ironPick: {name:'Iron pickaxe',type:'tool',tool:'pick',tier:2,value:24},
+  hardwood: {name:'Hardwood',type:'material',value:6},
+  resin: {name:'Tree resin',type:'material',value:8},
+  crystal: {name:'Vein crystal',type:'material',value:15},
+  leather: {name:'Cured leather',type:'material',value:12},
+  plank: {name:'Timber planks',type:'material',value:5},
+  steel: {name:'Steel ingot',type:'material',value:20},
+  steelSword: {name:'Steel sword',type:'weapon',damage:26,value:45},
+  huntersBlade: {name:'Hunter blade',type:'weapon',damage:21,value:35},
+  greaterPotion: {name:'Greater healing draught',type:'consumable',heal:80,value:15},
   rustySword: { name: 'Rusty sword', type: 'weapon', damage: 7, value: 3 },
   ironSword: { name: 'Iron sword', type: 'weapon', damage: 13, value: 16 },
   potion: { name: 'Healing draught', type: 'consumable', heal: 40, value: 6 },
@@ -61,6 +74,16 @@ export const NPCS = [
 ];
 
 export const RECIPES = {
+  woodaxe: {name:'Craft woodcutter axe',ingredients:{wood:2,scrap:2},output:'woodaxe',skill:'woodcutting',xp:16,characterXP:8},
+  pickaxe: {name:'Craft mining pick',ingredients:{wood:2,scrap:2},output:'pickaxe',skill:'smithing',xp:16,characterXP:8},
+  plank: {name:'Cut timber planks',ingredients:{wood:2},output:'plank',skill:'woodcutting',xp:18,characterXP:8},
+  leather: {name:'Cure wolf pelt',ingredients:{pelt:2,herb:1},output:'leather',skill:'survival',xp:22,characterXP:10},
+  greaterPotion: {name:'Brew greater healing',ingredients:{potion:1,herb:3,resin:1},output:'greaterPotion',skill:'alchemy',xp:45,characterXP:25},
+  steel: {name:'Smelt steel',ingredients:{ingot:2,wood:2},output:'steel',station:'Blacksmith',skill:'smithing',xp:48,characterXP:25},
+  ironAxe: {name:'Forge iron woodaxe',ingredients:{ingot:2,plank:1},output:'ironAxe',station:'Blacksmith',skill:'smithing',xp:40,characterXP:20},
+  ironPick: {name:'Forge iron pickaxe',ingredients:{ingot:2,plank:1},output:'ironPick',station:'Blacksmith',skill:'smithing',xp:40,characterXP:20},
+  steelSword: {name:'Forge steel sword',ingredients:{steel:2,leather:1},output:'steelSword',station:'Blacksmith',skill:'smithing',xp:75,characterXP:35},
+  huntersBlade: {name:'Forge hunter blade',ingredients:{ingot:2,leather:1,fang:2},output:'huntersBlade',station:'Blacksmith',skill:'smithing',xp:60,characterXP:30},
   salve: { name: 'Prepare herbal salve', ingredients: { herb: 1 }, output: 'salve', skill: 'alchemy', xp: 12, characterXP: 8 },
   potion: { name: 'Brew healing draught', ingredients: { herb: 2 }, output: 'potion', skill: 'alchemy', xp: 24, characterXP: 14 },
   manaPotion: { name: 'Brew mana draught', ingredients: { herb: 2, mushroom: 1 }, output: 'manaPotion', skill: 'alchemy', xp: 30, characterXP: 18 },

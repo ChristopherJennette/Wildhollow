@@ -1,4 +1,4 @@
-# Wildhollow — v1.5.1
+# Wildhollow — v1.6.0
 
 A mobile-first isometric fantasy RPG and village simulation. Vanilla JavaScript ES modules, Canvas, no dependencies or build step.
 
@@ -59,3 +59,11 @@ The Map tab shows north-up geography and numbered destinations. The HUD tracking
 Generation, routing, discovery, atlas rendering and scenery indexing are separate modules. Static geography is reconstructed from its seed rather than stored in localStorage. The renderer indexes scenery in 16-tile cells, drawing only candidates near the camera.
 
 Optional `node tests/browser-regions.cjs` uses the same Playwright/environment settings as `tests/browser.cjs`, checks the atlas and tracking UI, renders coast/ruins/bridge scenes, and reports a local draw-time sample. It does not measure phone performance or a physical controller.
+
+## Gathering and crafting
+
+Stand near a tree and use the context button or Xbox A to chop it. A woodcutter axe is required; an iron woodaxe yields extra timber. Mining ore requires a mining pick, and an iron pick yields extra ore. Basic tools are provided to new and existing characters; tools are carried automatically. Trees remain felled after saving and loading. Resource nodes regenerate as before. Gathering trains Woodcutting, Mining or Survival.
+
+Resource nodes and defeated enemies roll multiple independent drops, including uncommon crafting materials and occasional equipment. Drops from enemies remain on the ground to pick up. Craft basic tools and supplies in the journal; Bram offers iron tools, steel and upgraded weapons. Materials such as planks, cured leather, resin and crystals provide a foundation for further crafting.
+
+The nearby action button offers a relevant action for the closest person, loot, node or tree. Xbox A uses the same interaction selection.

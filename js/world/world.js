@@ -8,7 +8,7 @@ export function createWorld({seed,legacy=false,generatorVersion} = {}) {
   const map = legacy ? createMap() : generateMap(seed,generatorVersion);
   const player = { id: 'player', ...map.spawn, radius: 0.25, level: 1, xp: 0, points: 1,
     skills: Object.fromEntries(Object.keys(SKILLS).map(id => [id, { level: 1, xp: 0 }])),
-    attributes: {}, inventory: { rustySword: 1, potion: 2 }, weapon: 'rustySword', gold: 8,
+    attributes: {}, inventory: { rustySword: 1, potion: 2, woodaxe: 1, pickaxe: 1 }, weapon: 'rustySword', gatheringKitGranted: true, gold: 8,
     abilities: [], hotbar: Array(5).fill(null), cooldowns: {}, explored: [], discovered: [], trackedPoi: null, stealthEncounters: [],
     targetId: null, destination: null, path: [], sneaking: false, attackTimer: 0,
     penalty: 0, recoverableHealth: 0, facing: { x: 0, y: 1 } };
@@ -24,7 +24,14 @@ export function createWorld({seed,legacy=false,generatorVersion} = {}) {
   // Static occupancy is shared by pathfinding, line of sight, and collision checks.
   world.blocked = Array.from({ length: map.height }, (_, y) => map.terrain[y].map(t => t === 'water' || t === 'mountain'));
   for (const b of map.buildings) for (let y=b.y; y<b.y+b.collisionFootprint.h; y++) for(let x=b.x;x<b.x+b.collisionFootprint.w;x++) world.blocked[y][x]=true;
-  for (const t of map.trees) world.blocked[Math.floor(t.y)][Math.floor(t.x)] = true;
+  world.treeByTile = new Map();
+  world.treeById = new Map();
+  for (const t of map.trees) {
+    const x=Math.floor(t.x), y=Math.floor(t.y);
+    world.blocked[y][x] = true;
+    world.treeByTile.set(`${x},${y}`,t);
+    world.treeById.set(t.id,t);
+  }
   return world;
 }
 export function hour(world) { return (world.time / CONFIG.daySeconds * 24) % 24; }

@@ -1,3 +1,4 @@
+import { rollLoot } from './loot.js';
 import { cueAnimation } from '../graphics/animation.js';
 import { emitEffect } from '../graphics/effects.js';
 import { CONFIG, FORMULAS, distance } from '../config.js';
@@ -17,8 +18,9 @@ export function damageEnemy(world, enemy, amount, skill, notify) {
   if(enemy.health<=0) {
     const def=ENEMIES[enemy.kind];
     characterXP(world.player,def.xp,notify);
-    world.drops.push({id:`loot-${enemy.id}-${enemy.generation}`,x:enemy.x,y:enemy.y,item:def.loot,quantity:1});
-    if(def.extraLoot)world.drops.push({id:`extra-${enemy.id}-${enemy.generation}`,x:enemy.x,y:enemy.y,item:def.extraLoot,quantity:1});
+    for (const [index, drop] of rollLoot(enemy.kind).entries()) {
+      world.drops.push({id:`loot-${enemy.id}-${enemy.generation}-${index}`,x:enemy.x,y:enemy.y,...drop});
+    }
     enemy.respawnAt=world.elapsed+CONFIG.respawnSeconds;
     enemy.path=[];enemy.aggro=false;
     if(world.player.targetId===enemy.id) world.player.targetId=null;

@@ -1,4 +1,5 @@
 import { discoverLandmarks } from './world/exploration.js';
+import { nearestInteraction } from './input/targets.js';
 import { updateAnimations } from './graphics/animation.js';
 import { updateEffects } from './graphics/effects.js';
 import { CONFIG, distance } from './config.js';
@@ -11,7 +12,7 @@ import { UI } from './ui.js';
 import { updateCombat } from './systems/combat.js';
 import { updateNPCs } from './systems/npcSimulation.js';
 import { explore } from './systems/progression.js';
-import { gather, pickup } from './systems/inventory.js';
+import { gather, chopTree, pickup } from './systems/inventory.js';
 import { loadGame, saveGame, resetSave } from './systems/save.js';
 
 const canvas = document.getElementById('world'),
@@ -90,7 +91,7 @@ function save() {
 function interact() {
   const pending = world.interaction;
   if (!pending) return;
-  const list = pending.type === 'npc' ? world.npcs : pending.type === 'resource' ? world.map.resources : world.drops;
+  const list = pending.type === 'npc' ? world.npcs : pending.type === 'resource' ? world.map.resources : pending.type === 'tree' ? world.map.trees : world.drops;
   const entity = list.find(e => e.id === pending.id);
   if (!entity) {
     world.interaction = null;
@@ -101,9 +102,28 @@ function interact() {
     world.player.destination = null;
     world.interaction = null;
     if (pending.type === 'npc') ui.openPanel('npc', entity.id);
+    else if (pending.type === 'tree') chopTree(world, entity, ui.notify);
     else if (pending.type === 'resource') gather(world, entity, ui.notify);
     else pickup(world, entity, ui.notify);
   }
+}
+const contextAction = document.getElementById('context-action');
+contextAction.onclick = () => {
+  if (!world || menuOpen || ui.panel) return;
+  const candidate = nearestInteraction(world);
+  if (!candidate) return;
+  world.interaction = { id: candidate.entity.id, type: candidate.type };
+  interact();
+};
+function updateContextAction() {
+  const candidate = world && !menuOpen && !ui.panel ? nearestInteraction(world) : null;
+  contextAction.hidden = !candidate;
+  if (!candidate) return;
+  const entity = candidate.entity;
+  contextAction.textContent = candidate.type === 'npc' ? `Talk · ${entity.name}`
+    : candidate.type === 'tree' ? 'Chop tree'
+    : candidate.type === 'drop' ? 'Pick up loot'
+    : entity.kind === 'ore' ? 'Mine ore' : entity.kind === 'wood' ? 'Gather wood' : 'Gather';
 }
 const input = installInput(canvas, camera, () => world, () => world && !menuOpen && !ui.panel, ui.notify);
 const controller = installController({
@@ -156,6 +176,7 @@ function frame(timestamp) {
       saveTimer = 0;
     }
   }
+  updateContextAction();
   uiTimer += dt;
   if (uiTimer >= 0.1) {
     if (!menuOpen) ui.update();

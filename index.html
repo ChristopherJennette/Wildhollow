@@ -9,6 +9,7 @@
 </head>
 <body>
   <canvas id="world" aria-label="Wildhollow world. WASD, left stick or touch drag to move. Select enemies to target; approach people and resources to interact."></canvas>
+  <button id="context-action" hidden aria-label="Interact with nearby object"></button>
   <div id="joystick" hidden aria-hidden="true"><div id="joystick-knob"></div></div>
   <header id="hud" hidden>
     <div class="hud-identity"><button data-panel="character" class="avatar-button" aria-label="Open character and inventory">W</button><div><span class="eyebrow">THE WANDERER</span><div class="level-line"><span id="level"></span><progress id="xp" aria-label="Character experience" max="100"></progress></div></div><button id="menu-button" class="icon-button" aria-label="Pause and open menu">Ⅱ</button></div>
@@ -25,7 +26,7 @@
   <section id="menu" class="overlay menu-overlay" aria-label="Game menu">
     <div class="card intro">
       <div class="menu-story"><span class="eyebrow">A VILLAGE AT THE EDGE OF THE WILD</span><div class="crest" aria-hidden="true">✧</div><h1>Wildhollow</h1><p class="menu-subtitle">A quiet village.<br>A world waiting beyond.</p><span class="story-rule"></span><p class="muted">Gather. Grow. Find your own way.</p></div>
-      <div class="menu-actions"><span class="eyebrow">YOUR JOURNEY</span><button id="continue" class="primary">Continue journey <span aria-hidden="true">→</span></button><button id="new-game">Begin a new journey</button><button id="help-button">Controls & field guide</button><div class="menu-bottom"><small id="save-status">Version 1.5.1 · Local saves</small><button id="reset" class="text-button danger">Reset progress</button></div></div>
+      <div class="menu-actions"><span class="eyebrow">YOUR JOURNEY</span><button id="continue" class="primary">Continue journey <span aria-hidden="true">→</span></button><button id="new-game">Begin a new journey</button><button id="help-button">Controls & field guide</button><div class="menu-bottom"><small id="save-status">Version 1.6.0 · Local saves</small><button id="reset" class="text-button danger">Reset progress</button></div></div>
     </div>
   </section>
   <section id="panel" class="overlay" hidden role="dialog" aria-modal="true" aria-labelledby="panel-title">

@@ -8,7 +8,8 @@ const { runGamepadTests } = await import('./gamepad.js');
 const { runControllerTests } = await import('./controller.js');
 const { runPanelTests } = await import('./panels.js');
 const { runRegionTests } = await import('./regions.js');
-const result = [...runRegionTests(), ...runPanelTests(), ...runControllerTests(), ...runGamepadTests(), ...runTests(), ...runInputTests(), ...runGraphicsTests(), ...runExpansionTests(), ...runWorldTests()];
+const { runGatheringTests } = await import('./gathering.js');
+const result = [...runGatheringTests(), ...runRegionTests(), ...runPanelTests(), ...runControllerTests(), ...runGamepadTests(), ...runTests(), ...runInputTests(), ...runGraphicsTests(), ...runExpansionTests(), ...runWorldTests()];
 document.getElementById('results').textContent = result.join('\n');
 document.title = result.some(line => line.startsWith('FAIL')) ? 'FAIL' : 'PASS';
 </script></body></html>

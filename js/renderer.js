@@ -101,6 +101,7 @@ export class Renderer {
     this.terrain(world);this.queue.length=0;
     const player=this.position(this.records.get(world.player));
     for(const entry of this.sceneryIndex.query(cam)) {
+      if(entry.e.chopped)continue;
       if(entry.type==='resource' && entry.e.readyAt>world.elapsed)continue;
       this.position(entry);if(!this.visible(entry))continue;
       if(entry.layers)this.assets.draw(c,entry.layers.floor,entry.x,entry.y,z);

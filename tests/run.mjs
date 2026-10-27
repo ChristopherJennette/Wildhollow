@@ -1,5 +1,5 @@
 // Optional Node runner; production remains a static site with no build step.
-const suites = ['simulation', 'input', 'graphics', 'expansion', 'worldGeneration', 'gamepad', 'controller', 'panels', 'regions'];
+const suites = ['simulation', 'input', 'graphics', 'expansion', 'worldGeneration', 'gamepad', 'controller', 'panels', 'regions', 'gathering'];
 const results = [];
 for (const suite of suites) {
   const module = await import(`./${suite}.js`);

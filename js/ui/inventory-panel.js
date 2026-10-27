@@ -4,6 +4,7 @@ import { restoration } from '../systems/inventory.js';
 const FILTERS = { all: 'All items', weapon: 'Weapons', consumable: 'Supplies', material: 'Materials' };
 
 function category(item) {
+  if (item.type === 'tool') return 'material';
   if (item.type === 'weapon') return 'weapon';
   return Object.keys(restoration(item)).length ? 'consumable' : 'material';
 }
@@ -17,7 +18,7 @@ export function renderInventoryItems(player, filter = 'all') {
     const kind = category(item);
     const equipped = player.weapon === id;
     const restore = Object.entries(restoration(item)).map(([resource, amount]) => `${amount} ${resource}`).join(' + ');
-    const detail = item.damage ? `${item.damage} weapon damage` : restore ? `Restores ${restore}` : `Sells for ${item.value} gold`;
+    const detail = item.type === 'tool' ? `${item.tier === 2 ? 'Improved' : 'Basic'} ${item.tool === 'axe' ? 'woodcutting' : 'mining'} tool · carried automatically` : item.damage ? `${item.damage} weapon damage` : restore ? `Restores ${restore}` : `Sells for ${item.value} gold`;
     const icon = kind === 'weapon' ? '†' : kind === 'consumable' ? '◈' : '◇';
     const action = kind === 'weapon'
       ? `<button data-item="${id}" ${equipped ? 'disabled' : ''}>${equipped ? 'Equipped' : 'Equip weapon'}</button>`

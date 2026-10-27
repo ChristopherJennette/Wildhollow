@@ -10,12 +10,13 @@ const finite=(n,fallback,min=0,max=1e9)=>Number.isFinite(n)?clamp(n,min,max):fal
 export function saveGame(world,storage) {
   try {
     storage ??= globalThis.localStorage;
-    const fields=['x','y','level','xp','points','skills','attributes','inventory','weapon','gold','abilities','hotbar','cooldowns','explored','stealthEncounters','discovered','trackedPoi','health','stamina','mana','penalty','recoverableHealth'];
+    const fields=['x','y','level','xp','points','skills','attributes','inventory','gatheringKitGranted','weapon','gold','abilities','hotbar','cooldowns','explored','stealthEncounters','discovered','trackedPoi','health','stamina','mana','penalty','recoverableHealth'];
     const player=Object.fromEntries(fields.map(key=>[key,world.player[key]]));
     const map=world.map.seed===undefined?{kind:'legacy'}:{kind:'procedural',seed:world.map.seed,generatorVersion:world.map.generatorVersion};
     const data={version:CONFIG.saveVersion,map,player,time:world.time,elapsed:world.elapsed,
       npcs:world.npcs.map(({id,x,y,state})=>({id,x,y,state})),
       enemies:world.enemies.map(({id,x,y,health,respawnAt,armorXP,generation,slowUntil,slowFactor})=>({id,x,y,health,respawnAt,armorXP,generation,slowUntil,slowFactor})),
+      choppedTrees:world.map.trees.filter(t=>t.chopped).map(t=>t.id),
       resources:world.map.resources.map(({id,readyAt})=>({id,readyAt})),drops:world.drops};
     storage.setItem(CONFIG.saveKey,JSON.stringify(data));return {ok:true};
   } catch {return {ok:false,error:'Saving unavailable. Check browser storage settings or free space.'};}
@@ -43,6 +44,12 @@ export function loadGame(storage) {
     p.level=Math.floor(p.level);p.points=Math.floor(p.points);
     if(Number.isFinite(s.x)&&Number.isFinite(s.y)&&walkable(world,s.x,s.y)) {p.x=s.x;p.y=s.y;}
     p.inventory={};for(const [id,n] of Object.entries(s.inventory)) if(ITEMS[id]&&Number.isFinite(n)&&n>=1) p.inventory[id]=Math.floor(Math.min(n,999999));
+    if (!s.gatheringKitGranted) { p.inventory.woodaxe ||= 1; p.inventory.pickaxe ||= 1; }
+    p.gatheringKitGranted = true;
+    if (Array.isArray(data.choppedTrees)) for (const id of data.choppedTrees) {
+      const tree=world.treeById.get(id);
+      if (tree) { tree.chopped=true; world.blocked[Math.floor(tree.y)][Math.floor(tree.x)]=false; }
+    }
     p.weapon=ITEMS[s.weapon]?.type==='weapon'&&p.inventory[s.weapon]?s.weapon:'rustySword';
     if(!p.inventory[p.weapon]) p.inventory[p.weapon]=1;
     p.abilities=Array.isArray(s.abilities)?[...new Set(s.abilities.filter(id=>ABILITIES[id]))]:[];

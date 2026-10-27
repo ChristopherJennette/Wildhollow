@@ -21,8 +21,17 @@ export function aimTarget(world, direction) {
   }
   if (best) world.player.targetId = best.id;
 }
+export function nearbyTrees(world) {
+  const x=Math.floor(world.player.x),y=Math.floor(world.player.y), trees=[];
+  for(let dy=-2;dy<=2;dy++)for(let dx=-2;dx<=2;dx++) {
+    const tree=world.treeByTile?.get(`${x+dx},${y+dy}`);
+    if(tree && !tree.chopped) trees.push(tree);
+  }
+  return trees;
+}
 export function nearestInteraction(world) {
-  return [...world.npcs.map(entity => ({ entity, type: 'npc' })),
+  return [...nearbyTrees(world).map(entity=>({entity,type:'tree'})),
+    ...world.npcs.map(entity => ({ entity, type: 'npc' })),
     ...world.drops.map(entity => ({ entity, type: 'drop' })),
     ...world.map.resources.filter(entity => entity.readyAt <= world.elapsed).map(entity => ({ entity, type: 'resource' }))]
     .filter(candidate => distance(world.player, candidate.entity) <= 1.6)

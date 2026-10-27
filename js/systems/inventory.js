@@ -1,3 +1,4 @@
+import { rollLoot } from './loot.js';
 import { ITEMS, RECIPES, SHOP, GATHERING } from '../data/definitions.js';
 import { distance } from '../config.js';
 import { maxima, skillXP, characterXP } from './progression.js';
@@ -34,11 +35,28 @@ export function craft(world,id,notify,npc=null) {
   addItem(p,recipe.output);skillXP(p,recipe.skill,recipe.xp);characterXP(p,recipe.characterXP,notify);
   notify(`Made ${ITEMS[recipe.output].name}.`);return true;
 }
+export function chopTree(world, tree, notify) {
+  if (!tree || tree.chopped || distance(world.player,tree)>1.8) return false;
+  const p=world.player;
+  if (!p.inventory.woodaxe && !p.inventory.ironAxe) { notify('You need a woodcutter axe.'); return false; }
+  tree.chopped=true;
+  world.blocked[Math.floor(tree.y)][Math.floor(tree.x)]=false;
+  const drops=rollLoot('tree');
+  if (p.inventory.ironAxe) drops[0].quantity++;
+  for(const drop of drops) addItem(p,drop.item,drop.quantity);
+  skillXP(p,'woodcutting',20); characterXP(p,14,notify);
+  notify(`Chopped tree: ${drops.map(d=>`${d.quantity} ${ITEMS[d.item].name}`).join(', ')}.`);
+  return true;
+}
 export function gather(world,node,notify) {
   if(distance(world.player,node)>1.8 || node.readyAt>world.elapsed)return false;
-  node.readyAt=world.elapsed+180;addItem(world.player,node.kind);
+  if (node.kind==='ore' && !world.player.inventory.pickaxe && !world.player.inventory.ironPick) { notify('You need a mining pick.'); return false; }
+  node.readyAt=world.elapsed+180;
+  const drops=rollLoot(node.kind);
+  if(node.kind==='ore' && world.player.inventory.ironPick && drops[0]) drops[0].quantity++;
+  for(const drop of drops)addItem(world.player,drop.item,drop.quantity);
   skillXP(world.player,GATHERING[node.kind]||'survival',12);characterXP(world.player,10,notify);
-  notify(`Gathered ${ITEMS[node.kind].name}.`);return true;
+  notify(`Gathered ${drops.map(drop=>`${drop.quantity} ${ITEMS[drop.item].name}`).join(', ')}.`);return true;
 }
 export function pickup(world,drop,notify) {
   if(distance(world.player,drop)>1.8)return false;

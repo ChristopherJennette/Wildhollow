@@ -210,3 +210,4 @@ progress { width: 100%; height: 5px; accent-color: var(--gold); border: 0; }
 #navigation:empty { display:none; }
 [data-track-poi][aria-pressed=true] { border-color:var(--gold); color:var(--gold); }
 @media(max-width:640px) { .atlas-layout { grid-template-columns:1fr; } .panel-tabs button { font-size:10px; padding-inline:2px; } }
+#context-action { position:fixed; right:max(16px,env(safe-area-inset-right)); bottom:calc(max(12px,env(safe-area-inset-bottom)) + 160px); z-index:2; background:#263d31ee; border-color:#dfc38b; box-shadow:0 5px 20px #0008; max-width:45vw; }
